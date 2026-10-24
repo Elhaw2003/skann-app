@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:skann_app/core/routing/routing_generation_config.dart';
 
 void main() {
@@ -10,10 +11,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      title: 'My App',
-      routerConfig: RoutingGenerationConfig.routerGeneratorConfig,
+    return ScreenUtilInit(
+      designSize: const Size(390, 884),
+      minTextAdapt: true,
+      splitScreenMode: true,
+      builder: (context, child) {
+        return MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          title: 'Skann App',
+          routerConfig: RoutingGenerationConfig.routerGeneratorConfig,
+        );
+      },
     );
   }
 }
