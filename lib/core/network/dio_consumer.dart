@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:skann_app/core/errors/exceptions.dart';
+import 'package:skann_app/core/errors/dio_exceptions.dart';
 import 'package:skann_app/core/network/api_constants.dart';
 import 'package:skann_app/core/network/api_consumer.dart';
 import 'package:skann_app/core/network/api_interceptors.dart';
@@ -29,7 +29,7 @@ class DioConsumer extends ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      handleDioExceptions(e);
+      DioExceptionHandler.handle(e);
     }
   }
 
@@ -47,7 +47,7 @@ class DioConsumer extends ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      handleDioExceptions(e);
+      DioExceptionHandler.handle(e);
     }
   }
 
@@ -66,7 +66,7 @@ class DioConsumer extends ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      handleDioExceptions(e);
+      DioExceptionHandler.handle(e);
     }
   }
 
@@ -86,7 +86,7 @@ class DioConsumer extends ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      handleDioExceptions(e);
+      DioExceptionHandler.handle(e);
     }
   }
 
@@ -108,7 +108,7 @@ class DioConsumer extends ApiConsumer {
       );
       return response.data;
     } on DioException catch (e) {
-      handleDioExceptions(e);
+      DioExceptionHandler.handle(e);
     }
   }
 }

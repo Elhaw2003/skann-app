@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:skann_app/core/routing/app_routes.dart';
-import 'package:skann_app/features/auth/presentation/view/login_screen.dart';
+import 'package:skann_app/features/auth/presentation/views/login_screen.dart';
+import 'package:skann_app/features/auth/presentation/views/registration_screen.dart';
 import 'package:skann_app/features/splash/presentation/view/splash_screen.dart';
 
 class RoutingGenerationConfig {
@@ -21,6 +22,11 @@ class RoutingGenerationConfig {
         path: AppRoutes.login,
         name: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        name: AppRoutes.register,
+        builder: (context, state) => const RegistrationScreen(),
       ),
     ],
   );

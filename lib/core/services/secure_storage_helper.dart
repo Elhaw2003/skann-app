@@ -50,6 +50,14 @@ class SecureStorageHelper {
     );
   }
 
+  Future<void> saveAuthenticationTokens({
+    required String accessToken,
+    required String refreshToken,
+  }) async {
+    await storage.write(key: accessTokenKey, value: accessToken);
+    await storage.write(key: refreshTokenKey, value: refreshToken);
+  }
+
   // =========================
   // Save User Type
   // =========================
