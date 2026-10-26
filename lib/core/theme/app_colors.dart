@@ -5,6 +5,9 @@ class AppColors {
   static const Color whiteColor = Color(0xffFFFFFF);
   static const Color backgroundColor = Color(0xffEDF0FE);
   static const Color primaryColor = Color(0xff3B82F6);
+  static const Color splashLogoBackgroundColor = Color(0xFFEDF4FD);
+  static const Color splashSubtitleColor = Color(0xFF71809A);
+  static const Color splashTitleColor = Color(0xFF11182F);
   static const Color secondaryColor = Color(0xff113E80);
   static const Color darkTealColor = Color(0xFF0D5C63);
   static const Color goldColor = Color(0xFFC6A75E);

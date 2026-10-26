@@ -1,6 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:skann_app/core/utils/app_text_style.dart';
+import 'package:skann_app/core/theme/app_text_styles.dart';
 
 class CustomRichTextWidget extends StatelessWidget {
   const CustomRichTextWidget({
@@ -17,11 +17,11 @@ class CustomRichTextWidget extends StatelessWidget {
     return RichText(
       text: TextSpan(
         text: title,
-        style: AppTextStyle.primaryTextW400S15,
+        style: AppTextStyles.primaryTextW400S15,
         children: [
           TextSpan(
             text: secondTitle,
-            style: AppTextStyle.primaryW400S15,
+            style: AppTextStyles.primaryW400S15,
             recognizer: TapGestureRecognizer()..onTap = onTap,
           ),
         ],

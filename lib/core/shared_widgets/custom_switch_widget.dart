@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:skann_app/core/utils/app_colors.dart';
+import 'package:skann_app/core/theme/app_colors.dart';
 
 class CustomSwitchWidget extends StatelessWidget {
   const CustomSwitchWidget({

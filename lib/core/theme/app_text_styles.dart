@@ -1,9 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:skann_app/core/utils/app_colors.dart';
+import 'package:skann_app/core/theme/app_colors.dart';
+import 'package:skann_app/core/theme/app_font_size.dart';
 
-class AppTextStyle {
+class AppTextStyles {
+  static TextStyle splashTitle = GoogleFonts.readexPro(
+    color: AppColors.splashTitleColor,
+    fontSize: AppFontSize.splashTitle.sp,
+    fontWeight: FontWeight.w700,
+  );
+  static TextStyle splashSubtitle = GoogleFonts.readexPro(
+    color: AppColors.splashSubtitleColor,
+    fontSize: AppFontSize.splashSubtitle.sp,
+    fontWeight: FontWeight.w400,
+  );
+
   /// Background color
   static TextStyle backgroundW600S25 = GoogleFonts.readexPro(
     color: AppColors.backgroundColor,

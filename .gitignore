@@ -32,6 +32,7 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+/rules/flutter_architecture.md
 
 # Symbolication related
 app.*.symbols

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:skann_app/core/utils/app_colors.dart';
-import 'package:skann_app/core/utils/app_text_style.dart';
+import 'package:skann_app/core/theme/app_colors.dart';
+import 'package:skann_app/core/theme/app_text_styles.dart';
 
 class CustomButtonWidget extends StatelessWidget {
   const CustomButtonWidget({
@@ -90,7 +90,7 @@ class CustomButtonWidget extends StatelessWidget {
                     Text(
                       title ?? "",
                       textAlign: TextAlign.center,
-                      style: titleStyle ?? AppTextStyle.whiteW500S27,
+                      style: titleStyle ?? AppTextStyles.whiteW500S27,
                     ),
               ),
             ),
