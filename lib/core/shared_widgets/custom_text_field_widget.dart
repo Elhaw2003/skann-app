@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:skann_app/core/utils/app_colors.dart';
-import 'package:skann_app/core/utils/app_text_style.dart';
+import 'package:skann_app/core/theme/app_colors.dart';
+import 'package:skann_app/core/theme/app_text_styles.dart';
 
 class CustomTextFieldWidget extends StatelessWidget {
   const CustomTextFieldWidget({
@@ -133,10 +133,10 @@ class CustomTextFieldWidget extends StatelessWidget {
                 hintTextDirection ??
                 (isRTL ? TextDirection.rtl : TextDirection.ltr),
             helperText: helperText,
-            helperStyle: helperTextStyle ?? AppTextStyle.grey300W400S16,
+            helperStyle: helperTextStyle ?? AppTextStyles.grey300W400S16,
             helperMaxLines: helperMaxLines ?? 1,
             hintText: hintText,
-            hintStyle: hintTextStyle ?? AppTextStyle.grey300W400S16,
+            hintStyle: hintTextStyle ?? AppTextStyles.grey300W400S16,
             fillColor: fillColor ?? AppColors.whiteColor,
             filled: true,
 
