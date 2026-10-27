@@ -61,34 +61,34 @@ class RegistrationDataModel extends Equatable {
 
 class UserModel extends Equatable {
   const UserModel({
-    required this.id,
-    required this.fullName,
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.phone,
+    this.id,
+    this.fullName,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.phone,
     required this.role,
-    required this.profileImage,
-    required this.bio,
-    required this.gender,
-    required this.governorate,
-    required this.university,
-    required this.faculty,
-    required this.major,
-    required this.academicYear,
-    required this.housingStatus,
-    required this.interests,
-    required this.isActive,
-    required this.createdAt,
-    required this.updatedAt,
+    this.profileImage,
+    this.bio,
+    this.gender,
+    this.governorate,
+    this.university,
+    this.faculty,
+    this.major,
+    this.academicYear,
+    this.housingStatus,
+    this.interests,
+    this.isActive,
+    this.createdAt,
+    this.updatedAt,
   });
 
-  final String id;
-  final String fullName;
-  final String firstName;
-  final String lastName;
-  final String email;
-  final String phone;
+  final String? id;
+  final String? fullName;
+  final String? firstName;
+  final String? lastName;
+  final String? email;
+  final String? phone;
   final String role;
   final String? profileImage;
   final String? bio;
@@ -99,19 +99,50 @@ class UserModel extends Equatable {
   final String? major;
   final String? academicYear;
   final String? housingStatus;
-  final Object? interests;
-  final bool isActive;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final List<String>? interests;
+  final bool? isActive;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  String get displayName {
+    final name = _cleanString(fullName);
+    if (name != null) return name;
+
+    return [
+      _cleanString(firstName),
+      _cleanString(lastName),
+    ].whereType<String>().join(' ');
+  }
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final user = UserModel.fromProfileJson(json);
+    for (final key in [
+      'id',
+      'fullName',
+      'firstName',
+      'lastName',
+      'email',
+      'phone',
+    ]) {
+      _requiredString(json, key);
+    }
+    _requiredBool(json, 'isActive');
+    if (user.createdAt == null || user.updatedAt == null) {
+      throw const FormatException(
+        'Required user dates are missing or invalid.',
+      );
+    }
+    return user;
+  }
+
+  factory UserModel.fromProfileJson(Map<String, dynamic> json) {
     return UserModel(
-      id: _requiredString(json, 'id'),
-      fullName: _requiredString(json, 'fullName'),
-      firstName: _requiredString(json, 'firstName'),
-      lastName: _requiredString(json, 'lastName'),
-      email: _requiredString(json, 'email'),
-      phone: _requiredString(json, 'phone'),
+      id: _optionalString(json, 'id'),
+      fullName: _optionalString(json, 'fullName'),
+      firstName: _optionalString(json, 'firstName'),
+      lastName: _optionalString(json, 'lastName'),
+      email: _optionalString(json, 'email'),
+      phone: _optionalString(json, 'phone'),
       role: _requiredString(json, 'role'),
       profileImage: _optionalString(json, 'profileImage'),
       bio: _optionalString(json, 'bio'),
@@ -122,10 +153,10 @@ class UserModel extends Equatable {
       major: _optionalString(json, 'major'),
       academicYear: _optionalString(json, 'academicYear'),
       housingStatus: _optionalString(json, 'housingStatus'),
-      interests: json['interests'],
-      isActive: _requiredBool(json, 'isActive'),
-      createdAt: DateTime.parse(_requiredString(json, 'createdAt')),
-      updatedAt: DateTime.parse(_requiredString(json, 'updatedAt')),
+      interests: _optionalStringList(json['interests']),
+      isActive: _optionalBool(json['isActive']),
+      createdAt: _optionalDateTime(json['createdAt']),
+      updatedAt: _optionalDateTime(json['updatedAt']),
     );
   }
 
@@ -154,21 +185,39 @@ class UserModel extends Equatable {
   ];
 }
 
+List<String>? _optionalStringList(Object? value) {
+  if (value is! List) return null;
+  return value.whereType<String>().toList(growable: false);
+}
+
+DateTime? _optionalDateTime(Object? value) {
+  if (value is! String || value.isEmpty) return null;
+  return DateTime.tryParse(value);
+}
+
+bool? _optionalBool(Object? value) => value is bool ? value : null;
+
 String _requiredString(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is String && value.isNotEmpty) return value;
   throw FormatException('Required string "$key" is missing or invalid.');
 }
 
-String? _optionalString(Map<String, dynamic> json, String key) {
-  final value = json[key];
-  if (value == null) return null;
-  if (value is String) return value;
-  throw FormatException('Optional string "$key" has an invalid value.');
-}
-
 bool _requiredBool(Map<String, dynamic> json, String key) {
   final value = json[key];
   if (value is bool) return value;
   throw FormatException('Required boolean "$key" is missing or invalid.');
+}
+
+String? _optionalString(Map<String, dynamic> json, String key) {
+  final value = json[key];
+  return _cleanString(value);
+}
+
+String? _cleanString(Object? value) {
+  if (value is! String) return null;
+  final normalized = value.trim();
+  return normalized.isEmpty || normalized.toLowerCase() == 'null'
+      ? null
+      : normalized;
 }

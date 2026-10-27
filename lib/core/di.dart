@@ -12,6 +12,8 @@ import 'package:skann_app/features/home/data/repositories/properties_repository.
 import 'package:skann_app/features/home/presentation/cubit/home_cubit.dart';
 import 'package:skann_app/features/property_details/data/repositories/property_details_repository.dart';
 import 'package:skann_app/features/property_details/presentation/cubit/property_details_cubit.dart';
+import 'package:skann_app/features/profile/data/repositories/profile_repository.dart';
+import 'package:skann_app/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:skann_app/features/room_details/presentation/cubit/room_details_cubit.dart';
 
 final sl = GetIt.instance;
@@ -55,5 +57,11 @@ Future<void> initializeDependencies() async {
   );
   sl.registerFactory<RoomDetailsCubit>(
     () => RoomDetailsCubit(repository: sl()),
+  );
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(apiConsumer: sl()),
+  );
+  sl.registerFactory<ProfileCubit>(
+    () => ProfileCubit(repository: sl(), secureStorageHelper: sl()),
   );
 }

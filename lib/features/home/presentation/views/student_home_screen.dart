@@ -56,6 +56,10 @@ class _StudentHomeViewState extends State<_StudentHomeView> {
         bottomNavigationBar: StudentBottomNavigationBar(
           selectedIndex: _selectedNavigationIndex,
           onDestinationSelected: (index) {
+            if (index == 4) {
+              context.go(AppRoutes.profile);
+              return;
+            }
             setState(() => _selectedNavigationIndex = index);
           },
         ),
