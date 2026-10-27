@@ -39,6 +39,17 @@ class PropertyDetailsView extends StatelessWidget {
                   property: state.property!,
                   isRefreshing: state.isRefreshing,
                   onRefresh: context.read<PropertyDetailsCubit>().refresh,
+                  rooms: state.rooms,
+                  roomsStatus: state.roomsStatus,
+                  roomsErrorMessage: state.roomsErrorMessage,
+                  onRetryRooms: () {
+                    final id = state.propertyId;
+                    if (id != null) {
+                      context.read<PropertyDetailsCubit>().loadPropertyRooms(
+                        id,
+                      );
+                    }
+                  },
                 ),
               };
             },
@@ -113,11 +124,19 @@ class _DetailsContent extends StatelessWidget {
     required this.property,
     required this.isRefreshing,
     required this.onRefresh,
+    required this.rooms,
+    required this.roomsStatus,
+    required this.roomsErrorMessage,
+    required this.onRetryRooms,
   });
 
   final PropertyModel property;
   final bool isRefreshing;
   final Future<void> Function() onRefresh;
+  final List<PropertyRoomModel> rooms;
+  final PropertyRoomsStatus roomsStatus;
+  final String? roomsErrorMessage;
+  final VoidCallback onRetryRooms;
 
   @override
   Widget build(BuildContext context) {
@@ -150,13 +169,14 @@ class _DetailsContent extends StatelessWidget {
                   SizedBox(height: 12.h),
                   PropertyAmenitiesSection(amenities: property.amenities),
                 ],
-                if (property.rooms.isNotEmpty) ...[
-                  SizedBox(height: 12.h),
-                  PropertyRoomsSection(
-                    rooms: property.rooms,
-                    currency: property.currency,
-                  ),
-                ],
+                SizedBox(height: 12.h),
+                PropertyRoomsSection(
+                  rooms: rooms,
+                  currency: property.currency,
+                  status: roomsStatus,
+                  errorMessage: roomsErrorMessage,
+                  onRetry: onRetryRooms,
+                ),
                 if (property.currentResidents.isNotEmpty) ...[
                   SizedBox(height: 12.h),
                   PropertyResidentsSection(

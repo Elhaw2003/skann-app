@@ -9,9 +9,11 @@ enum PropertyViewStatus {
   notAttempted,
   recording,
   recordedNewView,
-  alreadyRecorded,
+  notNewView,
   failed,
 }
+
+enum PropertyRoomsStatus { initial, loading, loaded, empty, failure }
 
 class PropertyDetailsState extends Equatable {
   const PropertyDetailsState({
@@ -24,6 +26,9 @@ class PropertyDetailsState extends Equatable {
     this.viewStatus = PropertyViewStatus.notAttempted,
     this.recordedView,
     this.viewFailure,
+    this.rooms = const [],
+    this.roomsStatus = PropertyRoomsStatus.initial,
+    this.roomsErrorMessage,
   });
 
   final String? propertyId;
@@ -35,6 +40,9 @@ class PropertyDetailsState extends Equatable {
   final PropertyViewStatus viewStatus;
   final RecordPropertyViewModel? recordedView;
   final Failure? viewFailure;
+  final List<PropertyRoomModel> rooms;
+  final PropertyRoomsStatus roomsStatus;
+  final String? roomsErrorMessage;
 
   PropertyDetailsState copyWith({
     String? propertyId,
@@ -48,6 +56,10 @@ class PropertyDetailsState extends Equatable {
     PropertyViewStatus? viewStatus,
     RecordPropertyViewModel? recordedView,
     Failure? viewFailure,
+    List<PropertyRoomModel>? rooms,
+    PropertyRoomsStatus? roomsStatus,
+    String? roomsErrorMessage,
+    bool clearRoomsErrorMessage = false,
   }) {
     return PropertyDetailsState(
       propertyId: propertyId ?? this.propertyId,
@@ -63,6 +75,11 @@ class PropertyDetailsState extends Equatable {
       viewStatus: viewStatus ?? this.viewStatus,
       recordedView: recordedView ?? this.recordedView,
       viewFailure: viewFailure ?? this.viewFailure,
+      rooms: rooms ?? this.rooms,
+      roomsStatus: roomsStatus ?? this.roomsStatus,
+      roomsErrorMessage: clearRoomsErrorMessage
+          ? null
+          : roomsErrorMessage ?? this.roomsErrorMessage,
     );
   }
 
@@ -77,5 +94,8 @@ class PropertyDetailsState extends Equatable {
     viewStatus,
     recordedView,
     viewFailure,
+    rooms,
+    roomsStatus,
+    roomsErrorMessage,
   ];
 }

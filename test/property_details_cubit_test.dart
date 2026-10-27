@@ -16,6 +16,7 @@ void main() {
     cubit.open('property-1');
 
     repository.completeDetails('property-1', Right(_property('property-1')));
+    repository.completeRooms('property-1', const Right([]));
     repository.completeView(
       'property-1',
       const Right(
@@ -40,6 +41,7 @@ void main() {
     cubit.open('property-1');
 
     repository.completeDetails('property-1', Right(_property('property-1')));
+    repository.completeRooms('property-1', const Right([]));
     repository.completeView(
       'property-1',
       const Left(NetworkFailure('offline')),
@@ -58,6 +60,7 @@ void main() {
     final cubit = PropertyDetailsCubit(repository: repository);
     cubit.open('property-1');
     repository.completeDetails('property-1', Right(_property('property-1')));
+    repository.completeRooms('property-1', const Right([]));
     await _flushMicrotasks();
 
     final refresh = cubit.refresh();
@@ -67,10 +70,12 @@ void main() {
       Right(_property('property-1', title: 'Updated')),
       requestIndex: 1,
     );
+    repository.completeRooms('property-1', const Right([]), requestIndex: 1);
     await refresh;
 
     expect(cubit.state.property?.title, 'Updated');
     expect(repository.viewRequests, ['property-1']);
+    expect(repository.roomsRequests, ['property-1', 'property-1']);
     await cubit.close();
   });
 
@@ -83,6 +88,7 @@ void main() {
       cubit.open('property-b');
 
       repository.completeDetails('property-a', Right(_property('property-a')));
+      repository.completeRooms('property-a', const Right([]));
       repository.completeView(
         'property-a',
         const Right(
@@ -98,8 +104,11 @@ void main() {
       expect(cubit.state.propertyId, 'property-b');
       expect(cubit.state.property, isNull);
       expect(cubit.state.viewStatus, PropertyViewStatus.recording);
+      expect(cubit.state.rooms, isEmpty);
+      expect(cubit.state.roomsStatus, PropertyRoomsStatus.loading);
 
       repository.completeDetails('property-b', Right(_property('property-b')));
+      repository.completeRooms('property-b', const Right([]));
       repository.completeView(
         'property-b',
         const Right(
@@ -113,9 +122,10 @@ void main() {
       await _flushMicrotasks();
 
       expect(cubit.state.property?.id, 'property-b');
-      expect(cubit.state.viewStatus, PropertyViewStatus.alreadyRecorded);
+      expect(cubit.state.viewStatus, PropertyViewStatus.notNewView);
       expect(repository.detailsRequests, ['property-a', 'property-b']);
       expect(repository.viewRequests, ['property-a', 'property-b']);
+      expect(repository.roomsRequests, ['property-a', 'property-b']);
       await cubit.close();
     },
   );
@@ -130,13 +140,66 @@ void main() {
 
       expect(repository.detailsRequests, ['property-1']);
       expect(repository.viewRequests, ['property-1']);
+      expect(repository.roomsRequests, ['property-1']);
       await cubit.close();
     },
   );
+
+  test(
+    'rooms failure leaves property loaded and retry does not record view',
+    () async {
+      final repository = _ControlledPropertyDetailsRepository();
+      final cubit = PropertyDetailsCubit(repository: repository);
+      cubit.open('property-1');
+      repository.completeDetails('property-1', Right(_property('property-1')));
+      repository.completeView(
+        'property-1',
+        const Right(
+          RecordPropertyViewModel(propertyId: 'property-1', isNewView: false),
+        ),
+      );
+      repository.completeRooms(
+        'property-1',
+        const Left(NetworkFailure('offline')),
+      );
+      await _flushMicrotasks();
+
+      expect(cubit.state.status, PropertyDetailsStatus.loaded);
+      expect(cubit.state.roomsStatus, PropertyRoomsStatus.failure);
+
+      final retry = cubit.loadPropertyRooms('property-1');
+      repository.completeRooms(
+        'property-1',
+        Right([_room('room-1')]),
+        requestIndex: 1,
+      );
+      await retry;
+
+      expect(cubit.state.roomsStatus, PropertyRoomsStatus.loaded);
+      expect(cubit.state.rooms.single.id, 'room-1');
+      expect(repository.viewRequests, ['property-1']);
+      await cubit.close();
+    },
+  );
+
+  test('empty room endpoint response has an explicit empty state', () async {
+    final repository = _ControlledPropertyDetailsRepository();
+    final cubit = PropertyDetailsCubit(repository: repository);
+    cubit.open('property-1');
+    repository.completeDetails('property-1', Right(_property('property-1')));
+    repository.completeRooms('property-1', const Right([]));
+    await _flushMicrotasks();
+
+    expect(cubit.state.roomsStatus, PropertyRoomsStatus.empty);
+    expect(cubit.state.rooms, isEmpty);
+    await cubit.close();
+  });
 }
 
 PropertyModel _property(String id, {String title = 'سكن'}) =>
     PropertyModel(id: id, title: title);
+
+PropertyRoomModel _room(String id) => PropertyRoomModel(id: id, name: 'غرفة');
 
 Future<void> _flushMicrotasks() => Future<void>.delayed(Duration.zero);
 
@@ -144,10 +207,13 @@ class _ControlledPropertyDetailsRepository
     implements PropertyDetailsRepository {
   final List<String> detailsRequests = [];
   final List<String> viewRequests = [];
+  final List<String> roomsRequests = [];
   final Map<String, List<Completer<Either<Failure, PropertyModel>>>> _details =
       {};
   final Map<String, Completer<Either<Failure, RecordPropertyViewModel>>>
   _views = {};
+  final Map<String, List<Completer<Either<Failure, List<PropertyRoomModel>>>>>
+  _rooms = {};
 
   @override
   Future<Either<Failure, PropertyModel>> getPropertyDetails(String propertyId) {
@@ -168,6 +234,21 @@ class _ControlledPropertyDetailsRepository
     return completer.future;
   }
 
+  @override
+  Future<Either<Failure, List<PropertyRoomModel>>> getPropertyRooms(
+    String propertyId,
+  ) {
+    roomsRequests.add(propertyId);
+    final responses = _rooms.putIfAbsent(propertyId, () => []);
+    final completer = Completer<Either<Failure, List<PropertyRoomModel>>>();
+    responses.add(completer);
+    return completer.future;
+  }
+
+  @override
+  Future<Either<Failure, PropertyRoomModel>> getRoomDetails(String roomId) =>
+      Future.value(const Left(UnexpectedFailure('Not used in this test.')));
+
   void completeDetails(
     String propertyId,
     Either<Failure, PropertyModel> result, {
@@ -181,5 +262,13 @@ class _ControlledPropertyDetailsRepository
     Either<Failure, RecordPropertyViewModel> result,
   ) {
     _views[propertyId]!.complete(result);
+  }
+
+  void completeRooms(
+    String propertyId,
+    Either<Failure, List<PropertyRoomModel>> result, {
+    int requestIndex = 0,
+  }) {
+    _rooms[propertyId]![requestIndex].complete(result);
   }
 }

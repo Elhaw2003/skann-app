@@ -13,6 +13,7 @@ class PropertyDetailsCubit extends Cubit<PropertyDetailsState> {
 
   int _generation = 0;
   bool _detailsRequestInFlight = false;
+  bool _roomsRequestInFlight = false;
 
   void open(String propertyId) {
     if (isClosed) return;
@@ -23,15 +24,18 @@ class PropertyDetailsCubit extends Cubit<PropertyDetailsState> {
 
     final generation = ++_generation;
     _detailsRequestInFlight = false;
+    _roomsRequestInFlight = false;
     emit(
       PropertyDetailsState(
         propertyId: propertyId,
         status: PropertyDetailsStatus.loading,
         viewStatus: PropertyViewStatus.recording,
+        roomsStatus: PropertyRoomsStatus.loading,
       ),
     );
     unawaited(_loadDetails(propertyId, generation));
     unawaited(_recordView(propertyId, generation));
+    unawaited(_loadRooms(propertyId, generation));
   }
 
   Future<void> loadPropertyDetails(String propertyId) async {
@@ -51,7 +55,16 @@ class PropertyDetailsCubit extends Cubit<PropertyDetailsState> {
         _detailsRequestInFlight) {
       return;
     }
-    await _loadDetails(propertyId, _generation, isRefresh: true);
+
+    await Future.wait([
+      _loadDetails(propertyId, _generation, isRefresh: true),
+      loadPropertyRooms(propertyId),
+    ]);
+  }
+
+  Future<void> loadPropertyRooms(String propertyId) async {
+    if (isClosed || state.propertyId != propertyId) return;
+    await _loadRooms(propertyId, _generation);
   }
 
   Future<void> _loadDetails(
@@ -64,9 +77,8 @@ class PropertyDetailsCubit extends Cubit<PropertyDetailsState> {
     }
 
     _detailsRequestInFlight = true;
-    final currentState = state;
     emit(
-      currentState.copyWith(
+      state.copyWith(
         status: isRefresh
             ? PropertyDetailsStatus.loaded
             : PropertyDetailsStatus.loading,
@@ -117,8 +129,50 @@ class PropertyDetailsCubit extends Cubit<PropertyDetailsState> {
         state.copyWith(
           viewStatus: recordedView.isNewView
               ? PropertyViewStatus.recordedNewView
-              : PropertyViewStatus.alreadyRecorded,
+              : PropertyViewStatus.notNewView,
           recordedView: recordedView,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _loadRooms(String propertyId, int generation) async {
+    if (isClosed ||
+        generation != _generation ||
+        _roomsRequestInFlight ||
+        state.propertyId != propertyId) {
+      return;
+    }
+
+    _roomsRequestInFlight = true;
+    emit(
+      state.copyWith(
+        roomsStatus: PropertyRoomsStatus.loading,
+        clearRoomsErrorMessage: true,
+      ),
+    );
+    final result = await repository.getPropertyRooms(propertyId);
+    if (isClosed ||
+        generation != _generation ||
+        state.propertyId != propertyId) {
+      return;
+    }
+    _roomsRequestInFlight = false;
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          roomsStatus: PropertyRoomsStatus.failure,
+          roomsErrorMessage: _roomsMessageFor(failure),
+        ),
+      ),
+      (rooms) => emit(
+        state.copyWith(
+          rooms: rooms,
+          roomsStatus: rooms.isEmpty
+              ? PropertyRoomsStatus.empty
+              : PropertyRoomsStatus.loaded,
+          clearRoomsErrorMessage: true,
         ),
       ),
     );
@@ -156,5 +210,18 @@ class PropertyDetailsCubit extends Cubit<PropertyDetailsState> {
       return 'حدث خطأ في الخادم. حاول مرة أخرى لاحقًا.';
     }
     return 'لم نتمكن من تحميل تفاصيل السكن حاليًا. حاول مرة أخرى.';
+  }
+
+  String _roomsMessageFor(Failure failure) {
+    if (failure is NetworkFailure) {
+      return 'تعذر تحميل الغرف بسبب مشكلة في الاتصال. حاول مرة أخرى.';
+    }
+    if (failure is NotFoundFailure) {
+      return 'لم نتمكن من العثور على غرف هذا السكن.';
+    }
+    if (failure is ServerFailure) {
+      return 'حدث خطأ أثناء تحميل الغرف. حاول مرة أخرى لاحقًا.';
+    }
+    return 'لم نتمكن من تحميل الغرف حاليًا. حاول مرة أخرى.';
   }
 }
