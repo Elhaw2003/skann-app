@@ -3,6 +3,9 @@ class EndPoint {
   static const String register = 'auth/register';
   static const String login = 'auth/login';
   static const String refreshToken = 'Auth/refreshtoken';
+  static const String properties = 'properties';
+  static const String locations = 'locations';
+  static const String amenities = 'amenities';
 }
 
 class ApiKey {

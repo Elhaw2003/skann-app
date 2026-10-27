@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:skann_app/core/di.dart';
+import 'package:skann_app/core/routing/app_routes.dart';
 import 'package:skann_app/core/theme/app_colors.dart';
 import 'package:skann_app/features/auth/data/models/login_request_model.dart';
 import 'package:skann_app/features/auth/presentation/cubit/auth_cubit.dart';
@@ -108,6 +110,9 @@ class _LoginViewState extends State<_LoginView> {
             behavior: SnackBarBehavior.floating,
           ),
         );
+      if (state.response.data.user.role == 'STUDENT') {
+        context.go(AppRoutes.studentHome);
+      }
     } else if (state is AuthFailureState) {
       messenger
         ..hideCurrentSnackBar()

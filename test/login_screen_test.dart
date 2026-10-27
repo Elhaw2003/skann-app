@@ -2,8 +2,10 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:skann_app/core/di.dart';
 import 'package:skann_app/core/errors/failure.dart';
+import 'package:skann_app/core/routing/app_routes.dart';
 import 'package:skann_app/features/auth/data/models/login_request_model.dart';
 import 'package:skann_app/features/auth/data/models/owner_registration_request.dart';
 import 'package:skann_app/features/auth/data/models/registration_response_model.dart';
@@ -24,10 +26,25 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final router = GoRouter(
+      initialLocation: AppRoutes.login,
+      routes: [
+        GoRoute(
+          path: AppRoutes.login,
+          builder: (context, state) => const LoginScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.studentHome,
+          builder: (context, state) =>
+              const Scaffold(body: Text('Student home destination')),
+        ),
+      ],
+    );
+    addTearDown(router.dispose);
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: const Size(390, 884),
-        builder: (context, child) => const MaterialApp(home: LoginScreen()),
+        builder: (context, child) => MaterialApp.router(routerConfig: router),
       ),
     );
 
@@ -46,7 +63,7 @@ void main() {
 
     expect(repository.request?.email, 'student@example.com');
     expect(repository.request?.password, 'Password123');
-    expect(find.text('تم تسجيل الدخول بنجاح'), findsOneWidget);
+    expect(find.text('Student home destination'), findsOneWidget);
   });
 }
 
