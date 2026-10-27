@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skann_app/core/di.dart';
 import 'package:skann_app/core/routing/app_routes.dart';
+import 'package:skann_app/core/services/secure_storage_helper.dart';
 import 'package:skann_app/features/auth/presentation/views/login_screen.dart';
 import 'package:skann_app/features/auth/presentation/views/registration_screen.dart';
 import 'package:skann_app/features/splash/presentation/view/splash_screen.dart';
@@ -19,7 +21,8 @@ class RoutingGenerationConfig {
       GoRoute(
         path: AppRoutes.spalshScreen,
         name: AppRoutes.spalshScreen,
-        builder: (context, state) => const SplashScreen(),
+        builder: (context, state) =>
+            SplashScreen(secureStorageHelper: sl<SecureStorageHelper>()),
       ),
       GoRoute(
         path: AppRoutes.login,
