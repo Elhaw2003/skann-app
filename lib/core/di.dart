@@ -10,6 +10,8 @@ import 'package:skann_app/features/home/data/repositories/amenities_repository.d
 import 'package:skann_app/features/home/data/repositories/locations_repository.dart';
 import 'package:skann_app/features/home/data/repositories/properties_repository.dart';
 import 'package:skann_app/features/home/presentation/cubit/home_cubit.dart';
+import 'package:skann_app/features/property_details/data/repositories/property_details_repository.dart';
+import 'package:skann_app/features/property_details/presentation/cubit/property_details_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -43,5 +45,11 @@ Future<void> initializeDependencies() async {
       locationsRepository: sl(),
       amenitiesRepository: sl(),
     ),
+  );
+  sl.registerLazySingleton<PropertyDetailsRepository>(
+    () => PropertyDetailsRepositoryImpl(apiConsumer: sl()),
+  );
+  sl.registerFactory<PropertyDetailsCubit>(
+    () => PropertyDetailsCubit(repository: sl()),
   );
 }

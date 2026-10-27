@@ -66,7 +66,7 @@ class PropertyCard extends StatelessWidget {
       children: [
         Expanded(
           child: Text(
-            property.title,
+            property.title ?? 'سكن طلابي',
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
@@ -193,13 +193,13 @@ class PropertyCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              propertyAmenityIcon(amenity),
+              propertyAmenityIcon(amenity.icon ?? amenity.name ?? ''),
               size: 13.sp,
               color: const Color(0xFF8293A6),
             ),
             SizedBox(width: 4.w),
             Text(
-              amenity,
+              amenity.name ?? '',
               style: TextStyle(color: const Color(0xFF74859A), fontSize: 9.sp),
             ),
           ],

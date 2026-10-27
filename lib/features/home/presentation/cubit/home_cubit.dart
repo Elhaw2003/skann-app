@@ -324,10 +324,16 @@ class HomeCubit extends Cubit<HomeState> {
     List<PropertyModel> current,
     PropertyPageModel page,
   ) {
-    final knownIds = current.map((property) => property.id).toSet();
+    final knownIds = current
+        .map((property) => property.id)
+        .whereType<String>()
+        .toSet();
     return List.unmodifiable([
       ...current,
-      ...page.items.where((property) => knownIds.add(property.id)),
+      ...page.items.where((property) {
+        final id = property.id;
+        return id == null || id.trim().isEmpty || knownIds.add(id);
+      }),
     ]);
   }
 
