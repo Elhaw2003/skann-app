@@ -1,15 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
+import 'package:skann_app/core/services/secure_storage_helper.dart';
 import 'package:skann_app/core/routing/app_routes.dart';
 import 'package:skann_app/core/theme/app_colors.dart';
 import 'package:skann_app/core/theme/app_text_styles.dart';
 import 'package:skann_app/core/utils/app_strings.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({required this.secureStorageHelper, super.key});
+
+  final SecureStorageHelper secureStorageHelper;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -41,9 +45,34 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.forward();
 
     _navigationTimer = Timer(const Duration(seconds: 4), () {
-      if (!mounted) return;
-      context.go(AppRoutes.login);
+      unawaited(_navigateToInitialRoute());
     });
+  }
+
+  Future<void> _navigateToInitialRoute() async {
+    if (!mounted) return;
+
+    try {
+      final isLoggedIn = await widget.secureStorageHelper.isLoggedIn();
+      final userType = await widget.secureStorageHelper.getUserType();
+      if (!mounted) return;
+
+      context.go(
+        isLoggedIn && userType == 'STUDENT'
+            ? AppRoutes.studentHome
+            : AppRoutes.login,
+      );
+    } on PlatformException catch (error, stackTrace) {
+      FlutterError.reportError(
+        FlutterErrorDetails(
+          exception: error,
+          stack: stackTrace,
+          library: 'splash screen',
+          context: ErrorDescription('while reading saved authentication'),
+        ),
+      );
+      if (mounted) context.go(AppRoutes.login);
+    }
   }
 
   @override
