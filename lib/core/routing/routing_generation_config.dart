@@ -4,6 +4,7 @@ import 'package:skann_app/core/routing/app_routes.dart';
 import 'package:skann_app/features/auth/presentation/views/login_screen.dart';
 import 'package:skann_app/features/auth/presentation/views/registration_screen.dart';
 import 'package:skann_app/features/splash/presentation/view/splash_screen.dart';
+import 'package:skann_app/features/home/presentation/views/student_home_screen.dart';
 
 class RoutingGenerationConfig {
   static GoRouter routerGeneratorConfig = GoRouter(
@@ -27,6 +28,11 @@ class RoutingGenerationConfig {
         path: AppRoutes.register,
         name: AppRoutes.register,
         builder: (context, state) => const RegistrationScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.studentHome,
+        name: AppRoutes.studentHome,
+        builder: (context, state) => const StudentHomeScreen(),
       ),
     ],
   );
