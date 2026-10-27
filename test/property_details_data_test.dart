@@ -19,6 +19,7 @@ void main() {
       expect(property.location?.city, 'القاهرة');
       expect(property.amenities.single.name, 'واي فاي');
       expect(property.rooms.single.availableBeds, 2);
+      expect(property.rooms.single.id, isNull);
       expect(property.rooms.single.monthlyPrice, 2400.5);
       expect(property.currentResidents.single.academicYear, 'الثالثة');
       expect(property.owner?.name, 'صاحب السكن');
@@ -130,6 +131,62 @@ void main() {
       final result = await repository.getPropertyDetails('property-1');
 
       expect(result, isA<Left<Failure, PropertyModel>>());
+    });
+
+    test(
+      'loads property rooms from the dedicated property rooms endpoint',
+      () async {
+        final api = _FakeApiConsumer({
+          'success': true,
+          'data': [
+            {
+              'id': 'room-1',
+              'name': 'غرفة',
+              'capacity': 2,
+              'images': [
+                {'id': 'later', 'url': 'second.jpg', 'sortOrder': 2},
+                {'id': 'first', 'url': 'first.jpg', 'sortOrder': 0},
+              ],
+            },
+          ],
+        });
+        final repository = PropertyDetailsRepositoryImpl(apiConsumer: api);
+
+        final result = await repository.getPropertyRooms('backend-id-42');
+
+        expect(api.getPath, 'properties/backend-id-42/rooms');
+        expect(result.isRight(), isTrue);
+        result.fold((_) => fail('Expected rooms to load.'), (rooms) {
+          expect(rooms.single.id, 'room-1');
+          expect(rooms.single.images.map((image) => image.url), [
+            'first.jpg',
+            'second.jpg',
+          ]);
+        });
+      },
+    );
+
+    test('parses an empty rooms response as an empty list', () async {
+      final repository = PropertyDetailsRepositoryImpl(
+        apiConsumer: _FakeApiConsumer({'success': true, 'data': []}),
+      );
+
+      final result = await repository.getPropertyRooms('property-1');
+
+      expect(result.fold((_) => null, (rooms) => rooms), isEmpty);
+    });
+
+    test('returns a failure when rooms data is not a list', () async {
+      final repository = PropertyDetailsRepositoryImpl(
+        apiConsumer: _FakeApiConsumer({
+          'success': true,
+          'data': {'id': 'not-a-list'},
+        }),
+      );
+
+      final result = await repository.getPropertyRooms('property-1');
+
+      expect(result.isLeft(), isTrue);
     });
   });
 }

@@ -256,6 +256,7 @@ class PropertyOwnerModel extends Equatable {
 
 class PropertyRoomModel extends Equatable {
   const PropertyRoomModel({
+    this.id,
     this.name,
     this.description,
     this.capacity,
@@ -264,8 +265,10 @@ class PropertyRoomModel extends Equatable {
     this.monthlyPrice,
     this.images = const [],
     this.amenities = const [],
+    this.property,
   });
 
+  final String? id;
   final String? name;
   final String? description;
   final int? capacity;
@@ -274,25 +277,40 @@ class PropertyRoomModel extends Equatable {
   final num? monthlyPrice;
   final List<PropertyImageModel> images;
   final List<PropertyAmenityModel> amenities;
+  final PropertyRoomPropertyModel? property;
 
-  factory PropertyRoomModel.fromJson(Map<String, dynamic> json) =>
-      PropertyRoomModel(
-        name: _optionalString(json['name']),
-        description: _optionalString(json['description']),
-        capacity: _optionalInt(json['capacity']),
-        occupiedBeds: _optionalInt(json['occupiedBeds']),
-        availableBeds: _optionalInt(json['availableBeds']),
-        monthlyPrice: _optionalNumber(json['monthlyPrice']),
-        images: List.unmodifiable(
-          _valueList(json['images']).map(PropertyImageModel.fromValue),
-        ),
-        amenities: List.unmodifiable(
-          _amenityList(json['amenities']).map(PropertyAmenityModel.fromValue),
-        ),
-      );
+  factory PropertyRoomModel.fromJson(Map<String, dynamic> json) {
+    final images =
+        _valueList(json['images']).map(PropertyImageModel.fromValue).toList()
+          ..sort((first, second) {
+            final firstOrder = first.sortOrder;
+            final secondOrder = second.sortOrder;
+            if (firstOrder == null) return secondOrder == null ? 0 : 1;
+            if (secondOrder == null) return -1;
+            return firstOrder.compareTo(secondOrder);
+          });
+    return PropertyRoomModel(
+      id: _optionalString(json['id']),
+      name: _optionalString(json['name']),
+      description: _optionalString(json['description']),
+      capacity: _optionalInt(json['capacity']),
+      occupiedBeds: _optionalInt(json['occupiedBeds']),
+      availableBeds: _optionalInt(json['availableBeds']),
+      monthlyPrice: _optionalNumber(json['monthlyPrice']),
+      images: List.unmodifiable(images),
+      amenities: List.unmodifiable(
+        _amenityList(json['amenities']).map(PropertyAmenityModel.fromValue),
+      ),
+      property: _optionalObject(
+        json['property'],
+        PropertyRoomPropertyModel.fromJson,
+      ),
+    );
+  }
 
   @override
   List<Object?> get props => [
+    id,
     name,
     description,
     capacity,
@@ -301,7 +319,39 @@ class PropertyRoomModel extends Equatable {
     monthlyPrice,
     images,
     amenities,
+    property,
   ];
+}
+
+class PropertyRoomPropertyModel extends Equatable {
+  const PropertyRoomPropertyModel({
+    this.id,
+    this.title,
+    this.city,
+    this.area,
+    this.address,
+    this.genderPolicy,
+  });
+
+  final String? id;
+  final String? title;
+  final String? city;
+  final String? area;
+  final String? address;
+  final String? genderPolicy;
+
+  factory PropertyRoomPropertyModel.fromJson(Map<String, dynamic> json) =>
+      PropertyRoomPropertyModel(
+        id: _optionalString(json['id']),
+        title: _optionalString(json['title']),
+        city: _optionalString(json['city']),
+        area: _optionalString(json['area']),
+        address: _optionalString(json['address']),
+        genderPolicy: _optionalString(json['genderPolicy']),
+      );
+
+  @override
+  List<Object?> get props => [id, title, city, area, address, genderPolicy];
 }
 
 class PropertyResidentModel extends Equatable {
