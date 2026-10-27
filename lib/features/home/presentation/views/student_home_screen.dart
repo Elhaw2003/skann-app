@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:skann_app/core/di.dart';
+import 'package:skann_app/core/routing/app_routes.dart';
 import 'package:skann_app/features/home/presentation/cubit/home_cubit.dart';
 import 'package:skann_app/features/home/presentation/cubit/home_state.dart';
 import 'package:skann_app/features/home/presentation/views/widgets/home_filter_sheet.dart';
@@ -177,11 +179,23 @@ class _StudentHomeViewState extends State<_StudentHomeView> {
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate((context, index) {
                     final property = state.properties[index];
+                    final propertyId = property.id;
                     return Padding(
                       padding: EdgeInsets.only(bottom: 15.h),
-                      child: PropertyCard(
-                        key: ValueKey(property.id),
-                        property: property,
+                      child: InkWell(
+                        onTap: propertyId == null || propertyId.trim().isEmpty
+                            ? null
+                            : () => context.push(
+                                AppRoutes.propertyDetails.replaceFirst(
+                                  ':propertyId',
+                                  Uri.encodeComponent(propertyId),
+                                ),
+                              ),
+                        borderRadius: BorderRadius.circular(21.r),
+                        child: PropertyCard(
+                          key: ValueKey(propertyId),
+                          property: property,
+                        ),
                       ),
                     );
                   }, childCount: state.properties.length),

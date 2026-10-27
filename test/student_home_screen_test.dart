@@ -109,7 +109,7 @@ class _PropertiesRepository implements PropertiesRepository {
             propertyType: 'STUDENT_HOUSING',
             genderPolicy: 'MALE',
             availableRooms: 1,
-            amenities: ['WiFi'],
+            amenities: [PropertyAmenityModel(name: 'WiFi')],
           ),
         ],
         pagination: PropertyPaginationModel(
