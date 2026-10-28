@@ -34,26 +34,31 @@ class ProfileLoaded extends ProfileState {
     required this.user,
     this.isRefreshing = false,
     this.refreshError,
+    this.isUpdating = false,
   });
 
   final UserModel user;
   final bool isRefreshing;
   final String? refreshError;
+  final bool isUpdating;
 
   ProfileLoaded copyWith({
     bool? isRefreshing,
     String? refreshError,
     bool clearRefreshError = false,
+    bool? isUpdating,
+    UserModel? user,
   }) {
     return ProfileLoaded(
-      user: user,
+      user: user ?? this.user,
       isRefreshing: isRefreshing ?? this.isRefreshing,
       refreshError: clearRefreshError
           ? null
           : refreshError ?? this.refreshError,
+      isUpdating: isUpdating ?? this.isUpdating,
     );
   }
 
   @override
-  List<Object?> get props => [user, isRefreshing, refreshError];
+  List<Object?> get props => [user, isRefreshing, refreshError, isUpdating];
 }

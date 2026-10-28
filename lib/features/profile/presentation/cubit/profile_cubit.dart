@@ -1,6 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:skann_app/core/errors/failure.dart';
 import 'package:skann_app/core/services/secure_storage_helper.dart';
+import 'package:skann_app/features/auth/data/models/registration_response_model.dart';
 import 'package:skann_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:skann_app/features/profile/presentation/cubit/profile_state.dart';
 
@@ -25,25 +27,107 @@ class ProfileCubit extends Cubit<ProfileState> {
     }
 
     final currentState = state as ProfileLoaded;
-    if (currentState.isRefreshing) return;
+    if (currentState.isRefreshing || currentState.isUpdating) return;
 
     final generation = ++_requestGeneration;
     emit(currentState.copyWith(isRefreshing: true, clearRefreshError: true));
     final result = await repository.getMyProfile();
     if (isClosed || generation != _requestGeneration) return;
 
-    result.fold((failure) {
+    result.fold(
+      (failure) {
+        final latestState = state;
+        if (latestState is ProfileLoaded) {
+          emit(
+            latestState.copyWith(
+              isRefreshing: false,
+              refreshError: _messageFor(failure),
+            ),
+          );
+        }
+      },
+      (user) {
+        emit(ProfileLoaded(user: user));
+      },
+    );
+  }
+
+  Future<Failure?> updateProfile(
+    Map<String, Object?> changes, {
+    XFile? profileImage,
+  }) async {
+    if (isClosed) {
+      return const UnexpectedFailure(
+        'تعذر حفظ التعديلات. حاول فتح الصفحة مرة أخرى.',
+      );
+    }
+    if (changes.isEmpty && profileImage == null) {
+      return const ValidationFailure('لم يتم إجراء أي تغييرات على البيانات.');
+    }
+    if (state is! ProfileLoaded) {
+      return const UnexpectedFailure('تعذر تحميل بيانات الملف الشخصي.');
+    }
+
+    final currentState = state as ProfileLoaded;
+    if (currentState.isUpdating || currentState.isRefreshing) {
+      return const ValidationFailure('هناك عملية أخرى قيد التنفيذ.');
+    }
+
+    emit(currentState.copyWith(isUpdating: true, clearRefreshError: true));
+    final result = await repository.updateProfile(
+      changes,
+      profileImage: profileImage,
+    );
+    if (isClosed) {
+      return const UnexpectedFailure(
+        'تعذر إكمال حفظ التعديلات. حاول مرة أخرى.',
+      );
+    }
+
+    if (result.isLeft()) {
+      final failure = result.swap().getOrElse(
+        () => const UnexpectedFailure('تعذر حفظ تعديلات الملف الشخصي.'),
+      );
       final latestState = state;
       if (latestState is ProfileLoaded) {
-        emit(
-          latestState.copyWith(
-            isRefreshing: false,
-            refreshError: _messageFor(failure),
-          ),
-        );
+        emit(latestState.copyWith(isUpdating: false));
       }
-    }, (user) => emit(ProfileLoaded(user: user)));
+      return failure;
+    }
+
+    final updatedUser = result.getOrElse(() => currentState.user);
+    if (profileImage == null) {
+      emit(ProfileLoaded(user: updatedUser));
+      return null;
+    }
+
+    final refreshedProfile = await repository.getMyProfile();
+    if (isClosed) return null;
+
+    return refreshedProfile.fold(
+      (failure) {
+        emit(
+          ProfileLoaded(user: updatedUser, refreshError: _messageFor(failure)),
+        );
+        return const ServerFailure(
+          'تعذر تأكيد حفظ الصورة من الخادم. لن تظهر الصورة في الملف الشخصي حتى يعيد الخادم رابطها.',
+          code: 'PROFILE_IMAGE_NOT_CONFIRMED',
+        );
+      },
+      (user) {
+        emit(ProfileLoaded(user: user));
+        if (_hasRemoteProfileImage(user)) return null;
+
+        return const ServerFailure(
+          'لم يُرجع الخادم رابط الصورة بعد رفعها. لن تظهر الصورة في الملف الشخصي حتى يعيد الخادم رابطها.',
+          code: 'PROFILE_IMAGE_NOT_CONFIRMED',
+        );
+      },
+    );
   }
+
+  bool _hasRemoteProfileImage(UserModel user) =>
+      user.profileImage?.trim().isNotEmpty ?? false;
 
   Future<void> logout() => secureStorageHelper.clearTokens();
 

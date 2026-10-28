@@ -110,9 +110,14 @@ class RegistrationSectionCard extends StatelessWidget {
 }
 
 class RegistrationFieldLabel extends StatelessWidget {
-  const RegistrationFieldLabel({required this.label, super.key});
+  const RegistrationFieldLabel({
+    required this.label,
+    this.isRequired = true,
+    super.key,
+  });
 
   final String label;
+  final bool isRequired;
 
   @override
   Widget build(BuildContext context) {
@@ -120,11 +125,12 @@ class RegistrationFieldLabel extends StatelessWidget {
       TextSpan(
         text: label,
         style: AppTextStyles.primaryTextW500S17.copyWith(fontSize: 12.sp),
-        children: const [
-          TextSpan(
-            text: ' *',
-            style: TextStyle(color: AppColors.redColor),
-          ),
+        children: [
+          if (isRequired)
+            const TextSpan(
+              text: ' *',
+              style: TextStyle(color: AppColors.redColor),
+            ),
         ],
       ),
     );
