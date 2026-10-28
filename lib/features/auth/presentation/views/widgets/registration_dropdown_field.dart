@@ -11,6 +11,7 @@ class RegistrationDropdownField extends StatelessWidget {
     required this.value,
     required this.items,
     required this.onChanged,
+    this.requiredSelection = true,
     super.key,
   });
 
@@ -19,20 +20,22 @@ class RegistrationDropdownField extends StatelessWidget {
   final String? value;
   final Map<String, String> items;
   final ValueChanged<String?> onChanged;
+  final bool requiredSelection;
 
   @override
   Widget build(BuildContext context) {
     return FormField<String>(
       initialValue: value,
-      validator: (selectedValue) =>
-          selectedValue == null ? 'يرجى اختيار $label' : null,
+      validator: (selectedValue) => requiredSelection && selectedValue == null
+          ? 'يرجى اختيار $label'
+          : null,
       builder: (field) {
         final selectedLabel = items[field.value];
         final hasError = field.errorText != null;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            RegistrationFieldLabel(label: label),
+            RegistrationFieldLabel(label: label, isRequired: requiredSelection),
             SizedBox(height: 6.h),
             Semantics(
               button: true,

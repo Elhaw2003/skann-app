@@ -103,7 +103,7 @@ class CustomTextFieldWidget extends StatelessWidget {
         data: ThemeData(
           textSelectionTheme: TextSelectionThemeData(
             selectionColor:
-                selectionColor ?? AppColors.primaryColor.withOpacity(0.5),
+                selectionColor ?? AppColors.primaryColor.withValues(alpha: 0.5),
             selectionHandleColor:
                 selectionHandleColor ?? AppColors.primaryColor,
           ),
@@ -156,7 +156,9 @@ class CustomTextFieldWidget extends StatelessWidget {
             suffixIcon: suffixIcon != null
                 ? IconButton(
                     onPressed: suffixOnPressed,
-                    highlightColor: AppColors.primaryColor.withOpacity(0.3),
+                    highlightColor: AppColors.primaryColor.withValues(
+                      alpha: 0.3,
+                    ),
                     icon: Icon(
                       suffixIcon,
                       color: suffixColor ?? AppColors.secondaryTextColor,

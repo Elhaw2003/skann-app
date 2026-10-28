@@ -12,6 +12,7 @@ import 'package:skann_app/features/profile/presentation/views/widgets/profile_he
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_information_section.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_extra_sections.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_state_views.dart';
+import 'package:skann_app/features/profile/presentation/views/edit_profile_screen.dart';
 
 class ProfileView extends StatelessWidget {
   const ProfileView({super.key});
@@ -120,18 +121,23 @@ class ProfileView extends StatelessWidget {
                   ),
                 ),
               ),
-              Container(
-                width: 42.w,
-                height: 42.w,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15.r),
-                  border: Border.all(color: const Color(0xFFE7ECF3)),
+              IconButton.filledTonal(
+                tooltip: 'تعديل الملف الشخصي',
+                onPressed: () => context.push(
+                  AppRoutes.editProfile,
+                  extra: ProfileEditRouteData(
+                    cubit: context.read<ProfileCubit>(),
+                    user: user,
+                  ),
                 ),
-                child: Icon(
-                  Icons.person_rounded,
-                  color: AppColors.primaryColor,
-                  size: 22.sp,
+                icon: const Icon(Icons.edit_rounded),
+                style: IconButton.styleFrom(
+                  foregroundColor: AppColors.primaryColor,
+                  backgroundColor: Colors.white,
+                  side: const BorderSide(color: Color(0xFFE7ECF3)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.r),
+                  ),
                 ),
               ),
             ],

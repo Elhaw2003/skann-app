@@ -30,12 +30,12 @@ class CustomSwitchWidget extends StatelessWidget {
           overlayColor ??
           WidgetStateProperty.resolveWith<Color?>((states) {
             if (states.contains(WidgetState.selected)) {
-              return AppColors.primaryColor.withOpacity(
-                0.1,
+              return AppColors.primaryColor.withValues(
+                alpha: 0.1,
               ); // تأثير أزرق خفيف للـ Active
             }
-            return AppColors.grey200Color.withOpacity(
-              0.1,
+            return AppColors.grey200Color.withValues(
+              alpha: 0.1,
             ); // تأثير رمادي خفيف للـ Inactive
           }),
       thumbColor: WidgetStateProperty.resolveWith<Color?>((states) {
@@ -54,8 +54,8 @@ class CustomSwitchWidget extends StatelessWidget {
           trackOutlineColor ??
           WidgetStateProperty.resolveWith<Color?>((states) {
             if (states.contains(WidgetState.selected)) {
-              return AppColors.primaryColor.withOpacity(
-                0.5,
+              return AppColors.primaryColor.withValues(
+                alpha: 0.5,
               ); // تحديد أزرق خفيف للـ Active
             }
             return AppColors.grey200Color; // تحديد رمادي للـ Inactive

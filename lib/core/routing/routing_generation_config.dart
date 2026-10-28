@@ -9,6 +9,7 @@ import 'package:skann_app/features/splash/presentation/view/splash_screen.dart';
 import 'package:skann_app/features/home/presentation/views/student_home_screen.dart';
 import 'package:skann_app/features/property_details/presentation/views/property_details_screen.dart';
 import 'package:skann_app/features/profile/presentation/views/profile_screen.dart';
+import 'package:skann_app/features/profile/presentation/views/edit_profile_screen.dart';
 import 'package:skann_app/features/room_details/presentation/views/room_details_screen.dart';
 
 class RoutingGenerationConfig {
@@ -44,6 +45,15 @@ class RoutingGenerationConfig {
         path: AppRoutes.profile,
         name: AppRoutes.profile,
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.editProfile,
+        name: AppRoutes.editProfile,
+        builder: (context, state) {
+          final arguments = state.extra;
+          if (arguments is! ProfileEditRouteData) return errorBuilder();
+          return EditProfileScreen(arguments: arguments);
+        },
       ),
       GoRoute(
         path: AppRoutes.propertyDetails,

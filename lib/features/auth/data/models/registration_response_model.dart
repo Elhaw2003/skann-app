@@ -186,6 +186,14 @@ class UserModel extends Equatable {
 }
 
 List<String>? _optionalStringList(Object? value) {
+  if (value is String) {
+    final interests = value
+        .split(RegExp('[,،]'))
+        .map((interest) => interest.trim())
+        .where((interest) => interest.isNotEmpty)
+        .toList(growable: false);
+    return interests.isEmpty ? null : interests;
+  }
   if (value is! List) return null;
   return value.whereType<String>().toList(growable: false);
 }
