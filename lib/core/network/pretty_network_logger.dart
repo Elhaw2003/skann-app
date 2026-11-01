@@ -9,8 +9,8 @@ class PrettyNetworkLogger extends Interceptor {
     final uri = options.uri;
     final method = options.method;
     final isPasswordChange = _isPasswordChange(options.path);
-    final headers = isPasswordChange ? '[REDACTED]' : options.headers;
-    final body = isPasswordChange ? '[REDACTED]' : options.data;
+    final headers = _sanitizeHeaders(options.headers);
+    final body = isPasswordChange ? '[REDACTED]' : _sanitize(options.data);
 
     log(
       '\n========== OUTGOING REQUEST ==========\n'
@@ -32,7 +32,7 @@ class PrettyNetworkLogger extends Interceptor {
     final statusCode = response.statusCode;
     final data = _isPasswordChange(response.requestOptions.path)
         ? '[REDACTED]'
-        : response.data;
+        : _sanitize(response.data);
 
     log(
       '\n========== RECEIVED RESPONSE ==========\n'
@@ -54,7 +54,7 @@ class PrettyNetworkLogger extends Interceptor {
     final statusCode = err.response?.statusCode;
     final data = _isPasswordChange(err.requestOptions.path)
         ? '[REDACTED]'
-        : err.response?.data;
+        : _sanitize(err.response?.data);
     final message = err.message;
 
     log(
@@ -73,4 +73,34 @@ class PrettyNetworkLogger extends Interceptor {
 
   bool _isPasswordChange(String path) =>
       path.replaceAll('\\', '/').endsWith('users/me/password');
+
+  Map<String, dynamic> _sanitizeHeaders(Map<String, dynamic> headers) {
+    return {
+      for (final entry in headers.entries)
+        entry.key: entry.key.toLowerCase() == 'authorization'
+            ? '[REDACTED]'
+            : _sanitize(entry.value),
+    };
+  }
+
+  Object? _sanitize(Object? value) {
+    if (value is Map) {
+      return {
+        for (final entry in value.entries)
+          entry.key.toString(): _isSensitiveKey(entry.key.toString())
+              ? '[REDACTED]'
+              : _sanitize(entry.value),
+      };
+    }
+    if (value is Iterable) {
+      return value.map(_sanitize).toList(growable: false);
+    }
+    return value;
+  }
+
+  bool _isSensitiveKey(String key) {
+    final normalizedKey = key.toLowerCase();
+    return normalizedKey.contains('token') ||
+        normalizedKey.contains('password');
+  }
 }

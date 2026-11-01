@@ -12,6 +12,7 @@ import 'package:skann_app/features/profile/presentation/views/profile_screen.dar
 import 'package:skann_app/features/profile/presentation/views/edit_profile_screen.dart';
 import 'package:skann_app/features/profile/presentation/views/change_password_screen.dart';
 import 'package:skann_app/features/room_details/presentation/views/room_details_screen.dart';
+import 'package:skann_app/features/matching_roommates/presentation/views/roommates_screen.dart';
 
 class RoutingGenerationConfig {
   static GoRouter routerGeneratorConfig = GoRouter(
@@ -60,6 +61,16 @@ class RoutingGenerationConfig {
         path: AppRoutes.changePassword,
         name: AppRoutes.changePassword,
         builder: (context, state) => const ChangePasswordScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.matchingRoommates,
+        name: AppRoutes.matchingRoommates,
+        builder: (context, state) => const RoommatesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.roommates,
+        name: AppRoutes.roommates,
+        builder: (context, state) => const RoommatesScreen(),
       ),
       GoRoute(
         path: AppRoutes.propertyDetails,

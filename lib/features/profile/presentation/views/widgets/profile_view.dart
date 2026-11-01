@@ -109,41 +109,44 @@ class ProfileView extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         padding: EdgeInsets.fromLTRB(18.w, 12.h, 18.w, 26.h),
         children: [
-          Row(
+          Text(
+            'الملف الشخصي',
+            style: TextStyle(
+              color: const Color(0xFF14263F),
+              fontSize: 23.sp,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          SizedBox(height: 16.h),
+          ProfileHeaderCard(user: user),
+          SizedBox(height: 12.h),
+          _ProfileActionCard(
             children: [
-              Expanded(
-                child: Text(
-                  'الملف الشخصي',
-                  style: TextStyle(
-                    color: const Color(0xFF14263F),
-                    fontSize: 23.sp,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ),
-              IconButton.filledTonal(
-                tooltip: 'تعديل الملف الشخصي',
-                onPressed: () => context.push(
+              _ProfileActionTile(
+                title: 'تعديل البيانات الشخصية',
+                subtitle: 'تحديث رقم الهاتف وكلمة المرور',
+                icon: Icons.manage_accounts_outlined,
+                iconColor: const Color(0xFF075BC5),
+                iconBackground: const Color(0xFFEAF2FC),
+                onTap: () => context.push(
                   AppRoutes.editProfile,
                   extra: ProfileEditRouteData(
                     cubit: context.read<ProfileCubit>(),
                     user: user,
                   ),
                 ),
-                icon: const Icon(Icons.edit_rounded),
-                style: IconButton.styleFrom(
-                  foregroundColor: AppColors.primaryColor,
-                  backgroundColor: Colors.white,
-                  side: const BorderSide(color: Color(0xFFE7ECF3)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.r),
-                  ),
-                ),
+              ),
+              const Divider(height: 1, indent: 14, endIndent: 14),
+              _ProfileActionTile(
+                title: 'زملاء السكن',
+                subtitle: 'اكتشف الطلاب وابحث عن شريك سكن',
+                icon: Icons.groups_2_outlined,
+                iconColor: const Color(0xFF0D8B83),
+                iconBackground: const Color(0xFFE4FAF6),
+                onTap: () => context.push(AppRoutes.roommates),
               ),
             ],
           ),
-          SizedBox(height: 16.h),
-          ProfileHeaderCard(user: user),
           if (state.isRefreshing) ...[
             SizedBox(height: 10.h),
             const LinearProgressIndicator(
@@ -188,10 +191,6 @@ class ProfileView extends StatelessWidget {
             ),
           ],
           SizedBox(height: 22.h),
-          ProfileChangePasswordButton(
-            onPressed: () => context.push(AppRoutes.changePassword),
-          ),
-          SizedBox(height: 10.h),
           ProfileLogoutButton(onPressed: () => _logoutAndOpenLogin(context)),
           SizedBox(height: 6.h),
         ],
@@ -223,4 +222,89 @@ class ProfileView extends StatelessWidget {
 
   String _readableValue(String value) =>
       value.replaceAll('_', ' ').trim().toLowerCase();
+}
+
+class _ProfileActionCard extends StatelessWidget {
+  const _ProfileActionCard({required this.children});
+
+  final List<Widget> children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 4.h),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: const Color(0xFFE8EDF4)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF20344F).withValues(alpha: 0.035),
+            blurRadius: 12.r,
+            offset: Offset(0, 3.h),
+          ),
+        ],
+      ),
+      child: Column(mainAxisSize: MainAxisSize.min, children: children),
+    );
+  }
+}
+
+class _ProfileActionTile extends StatelessWidget {
+  const _ProfileActionTile({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.iconColor,
+    required this.iconBackground,
+    required this.onTap,
+  });
+
+  final String title;
+  final String subtitle;
+  final IconData icon;
+  final Color iconColor;
+  final Color iconBackground;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: ListTile(
+        onTap: onTap,
+        contentPadding: EdgeInsets.symmetric(horizontal: 13.w, vertical: 3.h),
+        leading: Container(
+          width: 43.w,
+          height: 43.w,
+          decoration: BoxDecoration(
+            color: iconBackground,
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          child: Icon(icon, color: iconColor, size: 22.sp),
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            color: const Color(0xFF20344F),
+            fontSize: 14.sp,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            color: const Color(0xFF596579),
+            fontSize: 11.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        trailing: Icon(
+          Icons.chevron_left_rounded,
+          color: const Color(0xFFB6C2D0),
+          size: 23.sp,
+        ),
+      ),
+    );
+  }
 }

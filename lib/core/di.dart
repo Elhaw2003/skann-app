@@ -16,6 +16,9 @@ import 'package:skann_app/features/profile/data/repositories/profile_repository.
 import 'package:skann_app/features/profile/presentation/cubit/change_password_cubit.dart';
 import 'package:skann_app/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:skann_app/features/room_details/presentation/cubit/room_details_cubit.dart';
+import 'package:skann_app/features/matching_roommates/data/repositories/matching_roommates_repository.dart';
+import 'package:skann_app/features/matching_roommates/presentation/cubit/matching_roommates_cubit.dart';
+import 'package:skann_app/features/matching_roommates/presentation/cubit/roommates_directory_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -67,5 +70,14 @@ Future<void> initializeDependencies() async {
   );
   sl.registerFactory<ChangePasswordCubit>(
     () => ChangePasswordCubit(repository: sl()),
+  );
+  sl.registerLazySingleton<MatchingRoommatesRepository>(
+    () => MatchingRoommatesRepositoryImpl(apiConsumer: sl()),
+  );
+  sl.registerFactory<MatchingRoommatesCubit>(
+    () => MatchingRoommatesCubit(repository: sl()),
+  );
+  sl.registerFactory<RoommatesDirectoryCubit>(
+    () => RoommatesDirectoryCubit(repository: sl()),
   );
 }

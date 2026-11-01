@@ -1,9 +1,33 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:skann_app/core/network/api_constants.dart';
 import 'package:skann_app/core/services/secure_storage_helper.dart';
 
 class ApiInterceptor extends Interceptor {
-  ApiInterceptor();
+  ApiInterceptor({
+    required this.dio,
+    SecureStorageHelper? secureStorageHelper,
+    Dio Function()? refreshDioFactory,
+  }) : _secureStorageHelper =
+           secureStorageHelper ?? SecureStorageHelper.instance,
+       _refreshDioFactory = refreshDioFactory ?? _createRefreshDio;
+
+  static const _retriedRequestKey = 'retriedAfterTokenRefresh';
+
+  static Dio _createRefreshDio() {
+    return Dio(
+      BaseOptions(
+        baseUrl: EndPoint.baseUrl,
+        contentType: Headers.jsonContentType,
+      ),
+    );
+  }
+
+  final Dio dio;
+  final SecureStorageHelper _secureStorageHelper;
+  final Dio Function() _refreshDioFactory;
+  Future<String>? _refreshInProgress;
 
   @override
   void onRequest(
@@ -11,11 +35,6 @@ class ApiInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     if (options.data is FormData) {
-      // Explicitly write multipart/form-data with the FormData boundary.
-      // Relying on Dio to auto-inject the boundary is unreliable — the server
-      // ends up receiving title:null because it can't parse the body.
-      // We read the boundary directly from the FormData object so the header
-      // always matches the actual body delimiter.
       final boundary = (options.data as FormData).boundary;
       options.headers['content-type'] =
           'multipart/form-data; boundary=$boundary';
@@ -23,65 +42,96 @@ class ApiInterceptor extends Interceptor {
       options.headers['Content-Type'] = 'application/json';
     }
 
-    final token = await SecureStorageHelper.instance.getAccessToken();
-    if (token != null) {
-      options.headers["Authorization"] = '${ApiKey.tokenPrefix} $token';
+    try {
+      final token = await _secureStorageHelper.getAccessToken();
+      if (token != null && token.isNotEmpty) {
+        options.headers['Authorization'] = '${ApiKey.tokenPrefix} $token';
+      }
+      handler.next(options);
+    } catch (error, stackTrace) {
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
     }
-    return handler.next(options);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    // Handle 401 Unauthorized by refreshing the token
-    if (err.response?.statusCode == 401) {
-      final refreshToken = await SecureStorageHelper.instance.getRefreshToken();
-      final accessToken = await SecureStorageHelper.instance.getAccessToken();
-
-      if (refreshToken != null && accessToken != null) {
-        try {
-          // Use a fresh Dio instance to avoid interceptor loops
-          final dio = Dio();
-          final response = await dio.post(
-            '${EndPoint.baseUrl}${EndPoint.refreshToken}',
-            data: {
-              SecureStorageHelper.accessTokenKey: accessToken,
-              SecureStorageHelper.refreshTokenKey: refreshToken,
-            },
-          );
-
-          // Extract new tokens
-          final newToken = response.data["token"];
-          final newRefreshToken = response.data["refreshToken"];
-          final newExpiresAt = response.data["expiresOn"];
-          final newRefreshTokenExpiresOn =
-              response.data["refreshTokenExpiresOn"];
-
-          // Persist new tokens
-          await SecureStorageHelper.instance.saveTokens(
-            accessToken: newToken,
-            refreshToken: newRefreshToken,
-            expiresAt: newExpiresAt,
-            refreshTokenExpiresOn: newRefreshTokenExpiresOn,
-          );
-
-          // Update the failed request's Authorization header
-          err.requestOptions.headers['Authorization'] =
-              '${ApiKey.tokenPrefix} $newToken';
-
-          // Retry the original request with the new token
-          final retryDio = Dio();
-          final retryResponse = await retryDio.fetch(err.requestOptions);
-
-          // Resolve with the successful retry response
-          return handler.resolve(retryResponse);
-        } catch (e) {
-          // If refresh itself fails (e.g. refresh token expired),
-          // propagate the error. Consider triggering a global logout here.
-          return handler.next(err);
-        }
-      }
+    final requestOptions = err.requestOptions;
+    if (err.response?.statusCode != 401 ||
+        requestOptions.extra[_retriedRequestKey] == true ||
+        _isAuthenticationRequest(requestOptions.path)) {
+      handler.next(err);
+      return;
     }
-    // For non-401 errors, continue the error chain
-    return handler.next(err);
+
+    try {
+      final refreshToken = await _secureStorageHelper.getRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
+        handler.next(err);
+        return;
+      }
+
+      final refreshFuture = _refreshInProgress ??= _refreshAccessToken(
+        refreshToken,
+      );
+      final newAccessToken = await refreshFuture;
+      requestOptions
+        ..headers['Authorization'] = '${ApiKey.tokenPrefix} $newAccessToken'
+        ..extra[_retriedRequestKey] = true;
+
+      final response = await dio.fetch<dynamic>(requestOptions);
+      handler.resolve(response);
+    } catch (error, stackTrace) {
+      handler.reject(
+        DioException(
+          requestOptions: requestOptions,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
+    } finally {
+      _refreshInProgress = null;
+    }
+  }
+
+  Future<String> _refreshAccessToken(String refreshToken) async {
+    final refreshDio = _refreshDioFactory();
+    final response = await refreshDio.post<Map<String, dynamic>>(
+      EndPoint.refreshToken,
+      data: {SecureStorageHelper.refreshTokenKey: refreshToken},
+    );
+    final responseBody = response.data;
+    final rawData = responseBody?['data'];
+    if (responseBody?['success'] != true || rawData is! Map) {
+      throw const FormatException('The token refresh response was invalid.');
+    }
+
+    final data = Map<String, dynamic>.from(rawData);
+    final accessToken = data['accessToken'];
+    final rotatedRefreshToken = data['refreshToken'];
+    if (accessToken is! String ||
+        accessToken.isEmpty ||
+        rotatedRefreshToken is! String ||
+        rotatedRefreshToken.isEmpty) {
+      throw const FormatException('The refreshed tokens were missing.');
+    }
+
+    await _secureStorageHelper.saveAuthenticationTokens(
+      accessToken: accessToken,
+      refreshToken: rotatedRefreshToken,
+    );
+    return accessToken;
+  }
+
+  bool _isAuthenticationRequest(String path) {
+    final normalizedPath = path.toLowerCase();
+    return normalizedPath.endsWith(EndPoint.login.toLowerCase()) ||
+        normalizedPath.endsWith(EndPoint.register.toLowerCase()) ||
+        normalizedPath.endsWith(EndPoint.refreshToken.toLowerCase());
   }
 }
