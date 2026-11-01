@@ -8,8 +8,9 @@ class PrettyNetworkLogger extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final uri = options.uri;
     final method = options.method;
-    final headers = options.headers;
-    final body = options.data;
+    final isPasswordChange = _isPasswordChange(options.path);
+    final headers = isPasswordChange ? '[REDACTED]' : options.headers;
+    final body = isPasswordChange ? '[REDACTED]' : options.data;
 
     log(
       '\n========== OUTGOING REQUEST ==========\n'
@@ -29,7 +30,9 @@ class PrettyNetworkLogger extends Interceptor {
     final uri = response.requestOptions.uri;
     final method = response.requestOptions.method;
     final statusCode = response.statusCode;
-    final data = response.data;
+    final data = _isPasswordChange(response.requestOptions.path)
+        ? '[REDACTED]'
+        : response.data;
 
     log(
       '\n========== RECEIVED RESPONSE ==========\n'
@@ -49,7 +52,9 @@ class PrettyNetworkLogger extends Interceptor {
     final uri = err.requestOptions.uri;
     final method = err.requestOptions.method;
     final statusCode = err.response?.statusCode;
-    final data = err.response?.data;
+    final data = _isPasswordChange(err.requestOptions.path)
+        ? '[REDACTED]'
+        : err.response?.data;
     final message = err.message;
 
     log(
@@ -65,4 +70,7 @@ class PrettyNetworkLogger extends Interceptor {
 
     super.onError(err, handler);
   }
+
+  bool _isPasswordChange(String path) =>
+      path.replaceAll('\\', '/').endsWith('users/me/password');
 }

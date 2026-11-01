@@ -10,6 +10,7 @@ import 'package:skann_app/features/home/presentation/views/student_home_screen.d
 import 'package:skann_app/features/property_details/presentation/views/property_details_screen.dart';
 import 'package:skann_app/features/profile/presentation/views/profile_screen.dart';
 import 'package:skann_app/features/profile/presentation/views/edit_profile_screen.dart';
+import 'package:skann_app/features/profile/presentation/views/change_password_screen.dart';
 import 'package:skann_app/features/room_details/presentation/views/room_details_screen.dart';
 
 class RoutingGenerationConfig {
@@ -54,6 +55,11 @@ class RoutingGenerationConfig {
           if (arguments is! ProfileEditRouteData) return errorBuilder();
           return EditProfileScreen(arguments: arguments);
         },
+      ),
+      GoRoute(
+        path: AppRoutes.changePassword,
+        name: AppRoutes.changePassword,
+        builder: (context, state) => const ChangePasswordScreen(),
       ),
       GoRoute(
         path: AppRoutes.propertyDetails,

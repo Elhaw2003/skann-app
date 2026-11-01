@@ -13,6 +13,7 @@ import 'package:skann_app/features/home/presentation/cubit/home_cubit.dart';
 import 'package:skann_app/features/property_details/data/repositories/property_details_repository.dart';
 import 'package:skann_app/features/property_details/presentation/cubit/property_details_cubit.dart';
 import 'package:skann_app/features/profile/data/repositories/profile_repository.dart';
+import 'package:skann_app/features/profile/presentation/cubit/change_password_cubit.dart';
 import 'package:skann_app/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:skann_app/features/room_details/presentation/cubit/room_details_cubit.dart';
 
@@ -63,5 +64,8 @@ Future<void> initializeDependencies() async {
   );
   sl.registerFactory<ProfileCubit>(
     () => ProfileCubit(repository: sl(), secureStorageHelper: sl()),
+  );
+  sl.registerFactory<ChangePasswordCubit>(
+    () => ChangePasswordCubit(repository: sl()),
   );
 }

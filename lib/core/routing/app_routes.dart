@@ -5,6 +5,7 @@ class AppRoutes {
   static const String studentHome = '/student-home';
   static const String profile = '/profile';
   static const String editProfile = '/profile/edit';
+  static const String changePassword = '/profile/change-password';
   static const String propertyDetails = '/property/:propertyId';
   static const String roomDetails = '/room/:roomId';
 }

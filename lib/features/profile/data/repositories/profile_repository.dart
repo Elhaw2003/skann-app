@@ -15,6 +15,10 @@ abstract class ProfileRepository {
     Map<String, Object?> changes, {
     XFile? profileImage,
   });
+  Future<Either<Failure, Unit>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  });
 }
 
 class ProfileRepositoryImpl implements ProfileRepository {
@@ -64,7 +68,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       if (changes.isEmpty && profileImage == null) {
         return const Left(
-          ValidationFailure('يتم إجراء أي تغييرات على البيانات.'),
+          ValidationFailure(' لم يتم إجراء أي تغييرات على البيانات.'),
         );
       }
 
@@ -127,6 +131,55 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return const Left(UnexpectedFailure('The profile response was invalid.'));
     } on TypeError {
       return const Left(UnexpectedFailure('The profile response was invalid.'));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await apiConsumer.patch(
+        EndPoint.myPassword,
+        data: {'currentPassword': currentPassword, 'newPassword': newPassword},
+      );
+      if (response is! Map) {
+        throw const FormatException(
+          'Password change response is not an object.',
+        );
+      }
+
+      final json = Map<String, dynamic>.from(response);
+      if (json['success'] != true) {
+        final message = json['message'];
+        return Left(
+          ServerFailure(
+            message is String && message.trim().isNotEmpty
+                ? message
+                : 'The password could not be changed.',
+            code: json['code'] is String ? json['code'] as String : null,
+          ),
+        );
+      }
+
+      if (json['code'] != 'USER_PASSWORD_UPDATED') {
+        return const Left(
+          UnexpectedFailure('The password change response was invalid.'),
+        );
+      }
+
+      return const Right(unit);
+    } on AppException catch (exception) {
+      return Left(mapExceptionToFailure(exception));
+    } on FormatException {
+      return const Left(
+        UnexpectedFailure('The password change response was invalid.'),
+      );
+    } on TypeError {
+      return const Left(
+        UnexpectedFailure('The password change response was invalid.'),
+      );
     }
   }
 
