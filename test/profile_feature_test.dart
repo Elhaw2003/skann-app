@@ -76,6 +76,40 @@ void main() {
       },
     );
 
+    test('sends the refresh token to the logout endpoint', () async {
+      final api = _FakeApiConsumer({
+        'success': true,
+        'code': 'AUTH_LOGOUT_SUCCESS',
+        'message': 'تم تسجيل الخروج بنجاح',
+        'data': null,
+      });
+      final repository = ProfileRepositoryImpl(apiConsumer: api);
+
+      final result = await repository.logout(refreshToken: 'refresh-token');
+
+      expect(api.postPath, 'auth/logout');
+      expect(api.postData, {'refreshToken': 'refresh-token'});
+      expect(result.isRight(), isTrue);
+    });
+
+    test(
+      'does not report logout as successful for an unsuccessful response',
+      () async {
+        final repository = ProfileRepositoryImpl(
+          apiConsumer: _FakeApiConsumer({
+            'success': false,
+            'code': 'AUTH_LOGOUT_FAILED',
+            'message': 'تعذر تسجيل الخروج',
+            'data': null,
+          }),
+        );
+
+        final result = await repository.logout(refreshToken: 'refresh-token');
+
+        expect(result.isLeft(), isTrue);
+      },
+    );
+
     test('rejects a response without profile data', () async {
       final repository = ProfileRepositoryImpl(
         apiConsumer: _FakeApiConsumer({'success': true, 'data': null}),
@@ -256,6 +290,43 @@ void main() {
       await cubit.close();
     });
 
+    test('clears local session after server logout succeeds', () async {
+      final repository = _FakeProfileRepository(
+        () async => Right(UserModel.fromJson(_profileData())),
+      );
+      final secureStorage = _FakeSecureStorageHelper()
+        ..refreshToken = 'refresh-token';
+      final cubit = ProfileCubit(
+        repository: repository,
+        secureStorageHelper: secureStorage,
+      );
+
+      final failure = await cubit.logout();
+
+      expect(failure, isNull);
+      expect(repository.lastRefreshToken, 'refresh-token');
+      expect(secureStorage.isCleared, isTrue);
+      await cubit.close();
+    });
+
+    test('keeps local session when server logout fails', () async {
+      final repository = _FakeProfileRepository(
+        () async => Right(UserModel.fromJson(_profileData())),
+      )..logoutResult = () async => const Left(NetworkFailure('offline'));
+      final secureStorage = _FakeSecureStorageHelper()
+        ..refreshToken = 'refresh-token';
+      final cubit = ProfileCubit(
+        repository: repository,
+        secureStorageHelper: secureStorage,
+      );
+
+      final failure = await cubit.logout();
+
+      expect(failure, isA<NetworkFailure>());
+      expect(secureStorage.isCleared, isFalse);
+      await cubit.close();
+    });
+
     test('updates the profile using only changed fields', () async {
       final repository = _FakeProfileRepository(
         () async => Right(UserModel.fromJson(_profileData())),
@@ -382,6 +453,83 @@ void main() {
     expect(find.text('نبذة عني'), findsNothing);
   });
 
+  testWidgets('requires confirmation before logging out', (tester) async {
+    final cubit = ProfileCubit(
+      repository: _FakeProfileRepository(
+        () async => Right(UserModel.fromProfileJson(_profileData())),
+      ),
+      secureStorageHelper: _FakeSecureStorageHelper(),
+    );
+    await cubit.load();
+    addTearDown(cubit.close);
+
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 884),
+        builder: (context, child) => MaterialApp(
+          home: BlocProvider.value(value: cubit, child: const ProfileView()),
+        ),
+      ),
+    );
+
+    await tester.scrollUntilVisible(find.text('تسجيل الخروج'), 350);
+    await tester.tap(find.text('تسجيل الخروج'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('هل أنت متأكد من تسجيل الخروج؟'), findsOneWidget);
+    await tester.tap(find.text('البقاء'));
+    await tester.pumpAndSettle();
+    expect(find.text('هل أنت متأكد من تسجيل الخروج؟'), findsNothing);
+    expect(cubit.state, isA<ProfileLoaded>());
+  });
+
+  testWidgets('shows logout failures in a snackbar', (tester) async {
+    final repository =
+        _FakeProfileRepository(
+            () async => Right(UserModel.fromProfileJson(_profileData())),
+          )
+          ..logoutResult = () async =>
+              const Left(NetworkFailure('تعذر الاتصال بالإنترنت.'));
+    final cubit = ProfileCubit(
+      repository: repository,
+      secureStorageHelper: _FakeSecureStorageHelper()
+        ..refreshToken = 'refresh-token',
+    );
+    await cubit.load();
+    addTearDown(cubit.close);
+
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(390, 884),
+        builder: (context, child) => MaterialApp(
+          home: BlocProvider.value(value: cubit, child: const ProfileView()),
+        ),
+      ),
+    );
+
+    await tester.scrollUntilVisible(find.text('تسجيل الخروج'), 350);
+    await tester.tap(find.text('تسجيل الخروج'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تسجيل الخروج').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('تعذر الاتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.'),
+      findsOneWidget,
+    );
+    expect(find.text('هل أنت متأكد من تسجيل الخروج؟'), findsNothing);
+  });
+
   testWidgets('profile editor selects governorates from registration options', (
     tester,
   ) async {
@@ -454,6 +602,8 @@ class _FakeApiConsumer extends ApiConsumer {
 
   final Object? response;
   String? getPath;
+  String? postPath;
+  Object? postData;
   String? patchPath;
   Object? patchData;
 
@@ -464,6 +614,18 @@ class _FakeApiConsumer extends ApiConsumer {
     Map<String, dynamic>? queryParameters,
   }) async {
     getPath = path;
+    return response;
+  }
+
+  @override
+  Future<dynamic> post(
+    String path, {
+    Object? data,
+    Map<String, dynamic>? queryParameters,
+    bool isFromData = false,
+  }) async {
+    postPath = path;
+    postData = data;
     return response;
   }
 
@@ -488,8 +650,10 @@ class _FakeProfileRepository implements ProfileRepository {
 
   Future<Either<Failure, UserModel>> Function() result;
   Future<Either<Failure, UserModel>> Function()? updateResult;
+  Future<Either<Failure, Unit>> Function()? logoutResult;
   int requestCount = 0;
   Map<String, Object?>? lastChanges;
+  String? lastRefreshToken;
 
   @override
   Future<Either<Failure, UserModel>> getMyProfile() {
@@ -511,12 +675,22 @@ class _FakeProfileRepository implements ProfileRepository {
     required String currentPassword,
     required String newPassword,
   }) async => const Right(unit);
+
+  @override
+  Future<Either<Failure, Unit>> logout({required String refreshToken}) {
+    lastRefreshToken = refreshToken;
+    return logoutResult?.call() ?? Future.value(const Right(unit));
+  }
 }
 
 class _FakeSecureStorageHelper extends SecureStorageHelper {
   _FakeSecureStorageHelper() : super.internal();
 
   bool isCleared = false;
+  String? refreshToken;
+
+  @override
+  Future<String?> getRefreshToken() async => refreshToken;
 
   @override
   Future<void> clearTokens() async {

@@ -286,6 +286,10 @@ class _FakeProfileRepository implements ProfileRepository {
   }
 
   @override
+  Future<Either<Failure, Unit>> logout({required String refreshToken}) =>
+      throw UnimplementedError();
+
+  @override
   Future<Either<Failure, UserModel>> getMyProfile() =>
       throw UnimplementedError();
 
