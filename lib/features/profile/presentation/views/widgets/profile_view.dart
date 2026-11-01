@@ -11,6 +11,7 @@ import 'package:skann_app/features/profile/presentation/cubit/profile_state.dart
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_header_card.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_information_section.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_extra_sections.dart';
+import 'package:skann_app/features/profile/presentation/views/widgets/logout_confirmation_dialog.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_state_views.dart';
 import 'package:skann_app/features/profile/presentation/views/edit_profile_screen.dart';
 
@@ -39,7 +40,7 @@ class ProfileView extends StatelessWidget {
                   message: message,
                   requiresLogin: requiresLogin,
                   onRetry: context.read<ProfileCubit>().load,
-                  onLogin: () => _logoutAndOpenLogin(context),
+                  onLogin: () => _clearLocalSessionAndOpenLogin(context),
                 ),
               ProfileLoaded() => _buildProfile(context, state),
             },
@@ -199,8 +200,37 @@ class ProfileView extends StatelessWidget {
   }
 
   Future<void> _logoutAndOpenLogin(BuildContext context) async {
+    final cubit = context.read<ProfileCubit>();
+    final messenger = ScaffoldMessenger.of(context);
+    final result = await showLogoutConfirmationDialog(
+      context,
+      onConfirm: cubit.logout,
+    );
+    if (result == null || !context.mounted) return;
+
+    if (result.didLogout) {
+      context.go(AppRoutes.login);
+    }
+
+    final message = result.message;
+    if (message != null) {
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text(message),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: result.didLogout
+                ? const Color(0xFF168A68)
+                : const Color(0xFFB42318),
+          ),
+        );
+    }
+  }
+
+  Future<void> _clearLocalSessionAndOpenLogin(BuildContext context) async {
     try {
-      await context.read<ProfileCubit>().logout();
+      await context.read<ProfileCubit>().clearLocalSession();
       if (context.mounted) context.go(AppRoutes.login);
     } on PlatformException {
       if (!context.mounted) return;

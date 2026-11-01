@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skann_app/core/errors/failure.dart';
 import 'package:skann_app/core/services/secure_storage_helper.dart';
@@ -129,7 +130,40 @@ class ProfileCubit extends Cubit<ProfileState> {
   bool _hasRemoteProfileImage(UserModel user) =>
       user.profileImage?.trim().isNotEmpty ?? false;
 
-  Future<void> logout() => secureStorageHelper.clearTokens();
+  Future<Failure?> logout() async {
+    if (isClosed) {
+      return const UnexpectedFailure('تعذر تسجيل الخروج. حاول مرة أخرى.');
+    }
+
+    try {
+      final refreshToken = await secureStorageHelper.getRefreshToken();
+      if (refreshToken == null || refreshToken.isEmpty) {
+        return const AuthFailure(
+          'انتهت صلاحية جلسة الدخول. سجّل الدخول مرة أخرى.',
+        );
+      }
+
+      final result = await repository.logout(refreshToken: refreshToken);
+      if (isClosed) {
+        return const UnexpectedFailure('تعذر إكمال تسجيل الخروج.');
+      }
+      if (result.isLeft()) {
+        final failure = result.swap().getOrElse(
+          () => const UnexpectedFailure('تعذر تسجيل الخروج. حاول مرة أخرى.'),
+        );
+        return _logoutFailureFor(failure);
+      }
+
+      await secureStorageHelper.clearTokens();
+      return null;
+    } on PlatformException {
+      return const StorageFailure(
+        'تعذر تأمين تسجيل الخروج على هذا الجهاز. حاول مرة أخرى.',
+      );
+    }
+  }
+
+  Future<void> clearLocalSession() => secureStorageHelper.clearTokens();
 
   Future<void> _fetchProfile() async {
     final generation = ++_requestGeneration;
@@ -159,5 +193,26 @@ class ProfileCubit extends Cubit<ProfileState> {
       return 'حدث خطأ في الخادم. حاول مرة أخرى لاحقًا.';
     }
     return 'لم نتمكن من تحميل بيانات الملف الشخصي. حاول مرة أخرى.';
+  }
+
+  Failure _logoutFailureFor(Failure failure) {
+    if (failure is NetworkFailure) {
+      return const NetworkFailure(
+        'تعذر الاتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.',
+      );
+    }
+    if (failure is AuthFailure) {
+      return const AuthFailure(
+        'انتهت صلاحية جلسة الدخول. سجّل الدخول مرة أخرى.',
+      );
+    }
+    if (failure is ServerFailure) {
+      return ServerFailure(
+        failure.message,
+        code: failure.code,
+        fieldErrors: failure.fieldErrors,
+      );
+    }
+    return const UnexpectedFailure('تعذر تسجيل الخروج. حاول مرة أخرى.');
   }
 }

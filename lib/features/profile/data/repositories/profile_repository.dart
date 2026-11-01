@@ -19,6 +19,7 @@ abstract class ProfileRepository {
     required String currentPassword,
     required String newPassword,
   });
+  Future<Either<Failure, Unit>> logout({required String refreshToken});
 }
 
 class ProfileRepositoryImpl implements ProfileRepository {
@@ -180,6 +181,43 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return const Left(
         UnexpectedFailure('The password change response was invalid.'),
       );
+    }
+  }
+
+  @override
+  Future<Either<Failure, Unit>> logout({required String refreshToken}) async {
+    try {
+      final response = await apiConsumer.post(
+        EndPoint.logout,
+        data: {'refreshToken': refreshToken},
+      );
+      if (response is! Map) {
+        throw const FormatException('Logout response is not an object.');
+      }
+
+      final json = Map<String, dynamic>.from(response);
+      if (json['success'] != true) {
+        final message = json['message'];
+        return Left(
+          ServerFailure(
+            message is String && message.trim().isNotEmpty
+                ? message
+                : 'تعذر تسجيل الخروج. حاول مرة أخرى.',
+            code: json['code'] is String ? json['code'] as String : null,
+          ),
+        );
+      }
+      if (json['code'] != 'AUTH_LOGOUT_SUCCESS') {
+        return const Left(UnexpectedFailure('استجابة تسجيل الخروج غير صالحة.'));
+      }
+
+      return const Right(unit);
+    } on AppException catch (exception) {
+      return Left(mapExceptionToFailure(exception));
+    } on FormatException {
+      return const Left(UnexpectedFailure('استجابة تسجيل الخروج غير صالحة.'));
+    } on TypeError {
+      return const Left(UnexpectedFailure('استجابة تسجيل الخروج غير صالحة.'));
     }
   }
 

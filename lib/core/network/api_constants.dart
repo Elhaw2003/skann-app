@@ -2,6 +2,7 @@ class EndPoint {
   static const String baseUrl = 'https://sakann.duckdns.org/api/v1/';
   static const String register = 'auth/register';
   static const String login = 'auth/login';
+  static const String logout = 'auth/logout';
   static const String refreshToken = 'auth/refresh-token';
   static const String properties = 'properties';
   static const String locations = 'locations';

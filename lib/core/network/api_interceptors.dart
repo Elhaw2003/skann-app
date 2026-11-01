@@ -27,7 +27,8 @@ class ApiInterceptor extends Interceptor {
   final Dio dio;
   final SecureStorageHelper _secureStorageHelper;
   final Dio Function() _refreshDioFactory;
-  Future<String>? _refreshInProgress;
+  Future<String>?
+  _refreshInProgress; // مهمته يمنع من حدوث عمليات تحديث متزامنة  متكرره
 
   @override
   void onRequest(
@@ -75,7 +76,6 @@ class ApiInterceptor extends Interceptor {
         handler.next(err);
         return;
       }
-
       final refreshFuture = _refreshInProgress ??= _refreshAccessToken(
         refreshToken,
       );
@@ -132,6 +132,7 @@ class ApiInterceptor extends Interceptor {
     final normalizedPath = path.toLowerCase();
     return normalizedPath.endsWith(EndPoint.login.toLowerCase()) ||
         normalizedPath.endsWith(EndPoint.register.toLowerCase()) ||
+        normalizedPath.endsWith(EndPoint.logout.toLowerCase()) ||
         normalizedPath.endsWith(EndPoint.refreshToken.toLowerCase());
   }
 }
