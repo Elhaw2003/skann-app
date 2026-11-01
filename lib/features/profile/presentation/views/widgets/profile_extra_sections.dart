@@ -138,3 +138,29 @@ class ProfileLogoutButton extends StatelessWidget {
     );
   }
 }
+
+class ProfileChangePasswordButton extends StatelessWidget {
+  const ProfileChangePasswordButton({required this.onPressed, super.key});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 54.h,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: const Icon(Icons.lock_reset_rounded),
+        label: const Text('تغيير كلمة المرور'),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: const Color(0xFF20344F),
+          side: const BorderSide(color: Color(0xFFE1E8F0)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(17.r),
+          ),
+          textStyle: TextStyle(fontSize: 14.sp, fontWeight: FontWeight.w700),
+        ),
+      ),
+    );
+  }
+}

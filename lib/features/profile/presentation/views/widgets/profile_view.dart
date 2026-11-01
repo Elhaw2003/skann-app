@@ -188,6 +188,10 @@ class ProfileView extends StatelessWidget {
             ),
           ],
           SizedBox(height: 22.h),
+          ProfileChangePasswordButton(
+            onPressed: () => context.push(AppRoutes.changePassword),
+          ),
+          SizedBox(height: 10.h),
           ProfileLogoutButton(onPressed: () => _logoutAndOpenLogin(context)),
           SizedBox(height: 6.h),
         ],

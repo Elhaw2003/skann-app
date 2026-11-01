@@ -499,6 +499,12 @@ class _FakeProfileRepository implements ProfileRepository {
     lastChanges = changes;
     return updateResult?.call() ?? result();
   }
+
+  @override
+  Future<Either<Failure, Unit>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async => const Right(unit);
 }
 
 class _FakeSecureStorageHelper extends SecureStorageHelper {

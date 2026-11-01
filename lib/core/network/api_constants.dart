@@ -7,6 +7,7 @@ class EndPoint {
   static const String locations = 'locations';
   static const String amenities = 'amenities';
   static const String myProfile = 'users/me';
+  static const String myPassword = 'users/me/password';
 }
 
 class ApiKey {

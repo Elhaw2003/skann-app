@@ -47,6 +47,12 @@ class CustomTextFieldWidget extends StatelessWidget {
     this.fieldEnabled,
     this.inputFormatters,
     this.onChanged,
+    this.onFieldSubmitted,
+    this.textInputAction,
+    this.autofillHints,
+    this.enableSuggestions,
+    this.autocorrect,
+    this.suffixTooltip,
     this.focusNode,
     this.autoFocus,
   });
@@ -91,6 +97,12 @@ class CustomTextFieldWidget extends StatelessWidget {
   final bool? fieldEnabled;
   final List<TextInputFormatter>? inputFormatters;
   final void Function(String)? onChanged;
+  final void Function(String)? onFieldSubmitted;
+  final TextInputAction? textInputAction;
+  final Iterable<String>? autofillHints;
+  final bool? enableSuggestions;
+  final bool? autocorrect;
+  final String? suffixTooltip;
   final FocusNode? focusNode;
   final bool? autoFocus;
   @override
@@ -117,6 +129,11 @@ class CustomTextFieldWidget extends StatelessWidget {
           ), // 👈 بيزود مساحة وهمية تحت الفيلد في السكرول
           controller: controller,
           onChanged: onChanged,
+          onFieldSubmitted: onFieldSubmitted,
+          textInputAction: textInputAction,
+          autofillHints: autofillHints,
+          enableSuggestions: enableSuggestions ?? true,
+          autocorrect: autocorrect ?? true,
           minLines: minLines ?? 1,
           maxLines: obscureText == true ? 1 : (maxLines ?? minLines ?? 1),
           keyboardType: keyboardType ?? TextInputType.text,
@@ -155,6 +172,7 @@ class CustomTextFieldWidget extends StatelessWidget {
             // Suffix Icon
             suffixIcon: suffixIcon != null
                 ? IconButton(
+                    tooltip: suffixTooltip,
                     onPressed: suffixOnPressed,
                     highlightColor: AppColors.primaryColor.withValues(
                       alpha: 0.3,
