@@ -377,6 +377,8 @@ void main() {
     expect(find.text('جامعة القاهرة'), findsOneWidget);
     expect(find.text('طالب سكن'), findsOneWidget);
     expect(find.text('الملف الشخصي'), findsOneWidget);
+    expect(find.text('تعديل البيانات الشخصية'), findsOneWidget);
+    expect(find.text('زملاء السكن'), findsOneWidget);
     expect(find.text('نبذة عني'), findsNothing);
   });
 
@@ -417,6 +419,10 @@ void main() {
     await tester.tap(find.text('القاهرة'));
     await tester.pumpAndSettle();
     expect(find.text('القاهرة'), findsOneWidget);
+
+    await tester.drag(find.byType(ListView), const Offset(0, -3000));
+    await tester.pumpAndSettle();
+    expect(find.text('تغيير كلمة المرور'), findsOneWidget);
   });
 }
 

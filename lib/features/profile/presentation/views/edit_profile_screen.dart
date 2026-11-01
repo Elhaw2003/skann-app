@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:skann_app/core/errors/failure.dart';
+import 'package:skann_app/core/routing/app_routes.dart';
 import 'package:skann_app/core/theme/app_colors.dart';
 import 'package:skann_app/features/auth/data/models/registration_response_model.dart';
 import 'package:skann_app/features/auth/presentation/views/widgets/registration_form_fields.dart'
@@ -13,6 +14,7 @@ import 'package:skann_app/features/profile/presentation/views/widgets/profile_ed
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_edit_fields.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_edit_image_picker.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_edit_intro_card.dart';
+import 'package:skann_app/features/profile/presentation/views/widgets/profile_extra_sections.dart';
 
 class ProfileEditRouteData {
   const ProfileEditRouteData({required this.cubit, required this.user});
@@ -209,6 +211,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           controllers: _controllers,
                           accentColor: const Color(0xFF0D8B83),
                         ),
+                        SizedBox(height: 14.h),
+                        ProfileChangePasswordButton(
+                          onPressed: () =>
+                              context.push(AppRoutes.changePassword),
+                        ),
+                        SizedBox(height: 14.h),
                       ],
                     ),
                   ),
