@@ -68,6 +68,35 @@ class PropertyModel extends Equatable {
     return uri;
   }
 
+  PropertyModel copyWith({bool? isFavorite}) => PropertyModel(
+    id: id,
+    title: title,
+    thumbnail: thumbnail,
+    description: description,
+    propertyType: propertyType,
+    genderPolicy: genderPolicy,
+    startingPrice: startingPrice,
+    currency: currency,
+    rating: rating,
+    reviewsCount: reviewsCount,
+    viewsCount: viewsCount,
+    favoritesCount: favoritesCount,
+    isVerified: isVerified,
+    distanceFromUniversity: distanceFromUniversity,
+    availableRooms: availableRooms,
+    currentOccupants: currentOccupants,
+    city: city,
+    area: area,
+    address: address,
+    location: location,
+    images: images,
+    amenities: amenities,
+    owner: owner,
+    rooms: rooms,
+    currentResidents: currentResidents,
+    isFavorite: isFavorite ?? this.isFavorite,
+  );
+
   factory PropertyModel.fromJson(Map<String, dynamic> json) {
     final images =
         _objectList(json['images']).map(PropertyImageModel.fromJson).toList()

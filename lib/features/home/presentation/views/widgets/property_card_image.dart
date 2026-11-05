@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:skann_app/features/home/data/models/property_model.dart';
 import 'package:skann_app/features/home/presentation/views/widgets/property_card_labels.dart';
+import 'package:skann_app/features/favorites/presentation/widgets/favorite_button.dart';
 
 class PropertyCardImage extends StatelessWidget {
   const PropertyCardImage({required this.property, super.key});
@@ -43,6 +44,11 @@ class PropertyCardImage extends StatelessWidget {
                   ),
               ],
             ),
+          ),
+          PositionedDirectional(
+            top: 10.h,
+            end: 10.w,
+            child: FavoriteButton(property: property),
           ),
         ],
       ),

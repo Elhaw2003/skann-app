@@ -17,6 +17,7 @@ import 'package:skann_app/features/booking_requests/data/models/booking_request_
 import 'package:skann_app/features/booking_requests/presentation/views/booking_request_details_screen.dart';
 import 'package:skann_app/features/booking_requests/presentation/views/booking_request_screen.dart';
 import 'package:skann_app/features/booking_requests/presentation/views/my_bookings_screen.dart';
+import 'package:skann_app/features/favorites/presentation/views/favorites_screen.dart';
 
 class RoutingGenerationConfig {
   static GoRouter routerGeneratorConfig = GoRouter(
@@ -93,6 +94,11 @@ class RoutingGenerationConfig {
         path: AppRoutes.myBookings,
         name: AppRoutes.myBookings,
         builder: (context, state) => const MyBookingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.favorites,
+        name: AppRoutes.favorites,
+        builder: (context, state) => const FavoritesScreen(),
       ),
       GoRoute(
         path: AppRoutes.createBookingRequest,
