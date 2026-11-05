@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:skann_app/features/favorites/presentation/widgets/favorite_button.dart';
 import 'package:skann_app/features/home/data/models/property_model.dart';
 
 class PropertyDetailsGallery extends StatefulWidget {
-  const PropertyDetailsGallery({required this.images, super.key});
+  const PropertyDetailsGallery({
+    required this.images,
+    this.property,
+    super.key,
+  });
 
   final List<PropertyImageModel> images;
+  final PropertyModel? property;
 
   @override
   State<PropertyDetailsGallery> createState() => _PropertyDetailsGalleryState();
@@ -72,6 +78,12 @@ class _PropertyDetailsGalleryState extends State<PropertyDetailsGallery> {
               ),
             ),
           ),
+          if (widget.property != null)
+            PositionedDirectional(
+              top: 12.h,
+              end: 14.w,
+              child: FavoriteButton(property: widget.property!),
+            ),
           if (images.length > 1)
             PositionedDirectional(
               bottom: 14.h,

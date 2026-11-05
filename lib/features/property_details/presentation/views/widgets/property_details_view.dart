@@ -147,7 +147,10 @@ class _DetailsContent extends StatelessWidget {
         physics: const AlwaysScrollableScrollPhysics(),
         slivers: [
           SliverToBoxAdapter(
-            child: PropertyDetailsGallery(images: property.images),
+            child: PropertyDetailsGallery(
+              images: property.images,
+              property: property,
+            ),
           ),
           SliverPadding(
             padding: EdgeInsets.fromLTRB(16.w, 18.h, 16.w, 28.h),

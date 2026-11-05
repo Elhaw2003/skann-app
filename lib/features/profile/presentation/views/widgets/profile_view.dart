@@ -28,6 +28,7 @@ class ProfileView extends StatelessWidget {
           selectedIndex: 2,
           onDestinationSelected: (index) {
             if (index == 0) context.go(AppRoutes.studentHome);
+            if (index == 1) context.go(AppRoutes.favorites);
             if (index == 3) context.go(AppRoutes.myBookings);
           },
         ),

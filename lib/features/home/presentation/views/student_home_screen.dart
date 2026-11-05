@@ -15,15 +15,19 @@ import 'package:skann_app/features/home/presentation/views/widgets/home_state_vi
 import 'package:skann_app/features/home/presentation/views/widgets/property_card.dart';
 import 'package:skann_app/features/home/presentation/views/widgets/property_search_field.dart';
 import 'package:skann_app/features/home/presentation/views/widgets/student_bottom_navigation_bar.dart';
+import 'package:skann_app/features/favorites/presentation/cubit/favorites_cubit.dart';
 
 class StudentHomeScreen extends StatelessWidget {
   const StudentHomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<HomeCubit>()..load(),
-      child: const _StudentHomeView(),
+    return BlocProvider.value(
+      value: sl<FavoritesCubit>(),
+      child: BlocProvider(
+        create: (_) => sl<HomeCubit>()..load(),
+        child: const _StudentHomeView(),
+      ),
     );
   }
 }
@@ -38,8 +42,6 @@ class _StudentHomeView extends StatefulWidget {
 class _StudentHomeViewState extends State<_StudentHomeView> {
   final _searchController = TextEditingController();
   Timer? _searchDebounce;
-  int _selectedNavigationIndex = 0;
-
   @override
   void dispose() {
     _searchDebounce?.cancel();
@@ -54,8 +56,12 @@ class _StudentHomeViewState extends State<_StudentHomeView> {
       child: Scaffold(
         backgroundColor: const Color(0xFFF4F7FB),
         bottomNavigationBar: StudentBottomNavigationBar(
-          selectedIndex: _selectedNavigationIndex,
+          selectedIndex: 0,
           onDestinationSelected: (index) {
+            if (index == 1) {
+              context.go(AppRoutes.favorites);
+              return;
+            }
             if (index == 2) {
               context.go(AppRoutes.profile);
               return;
@@ -64,7 +70,6 @@ class _StudentHomeViewState extends State<_StudentHomeView> {
               context.go(AppRoutes.myBookings);
               return;
             }
-            setState(() => _selectedNavigationIndex = index);
           },
         ),
         body: SafeArea(
