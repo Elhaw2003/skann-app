@@ -13,6 +13,10 @@ import 'package:skann_app/features/profile/presentation/views/edit_profile_scree
 import 'package:skann_app/features/profile/presentation/views/change_password_screen.dart';
 import 'package:skann_app/features/room_details/presentation/views/room_details_screen.dart';
 import 'package:skann_app/features/matching_roommates/presentation/views/roommates_screen.dart';
+import 'package:skann_app/features/booking_requests/data/models/booking_request_model.dart';
+import 'package:skann_app/features/booking_requests/presentation/views/booking_request_details_screen.dart';
+import 'package:skann_app/features/booking_requests/presentation/views/booking_request_screen.dart';
+import 'package:skann_app/features/booking_requests/presentation/views/my_bookings_screen.dart';
 
 class RoutingGenerationConfig {
   static GoRouter routerGeneratorConfig = GoRouter(
@@ -84,6 +88,32 @@ class RoutingGenerationConfig {
         name: AppRoutes.roomDetails,
         builder: (context, state) =>
             RoomDetailsScreen(roomId: state.pathParameters['roomId'] ?? ''),
+      ),
+      GoRoute(
+        path: AppRoutes.myBookings,
+        name: AppRoutes.myBookings,
+        builder: (context, state) => const MyBookingsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.createBookingRequest,
+        name: AppRoutes.createBookingRequest,
+        builder: (context, state) {
+          final arguments = state.extra;
+          if (arguments is! BookingRequestRouteData) return errorBuilder();
+          return BookingRequestScreen(
+            property: arguments.property,
+            room: arguments.room,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.bookingRequestDetails,
+        name: AppRoutes.bookingRequestDetails,
+        builder: (context, state) {
+          final booking = state.extra;
+          if (booking is! BookingRequestModel) return errorBuilder();
+          return BookingRequestDetailsScreen(booking: booking);
+        },
       ),
     ],
   );

@@ -43,9 +43,11 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    for (final label in ['حسابي', 'المفضلة', 'سكناتي', 'البحث', 'الرئيسية']) {
+    for (final label in ['الرئيسية', 'المفضلة', 'البروفايل', 'حجوزاتي']) {
       expect(find.text(label), findsOneWidget);
     }
+    expect(find.text('سكناتي'), findsNothing);
+    expect(find.text('البحث'), findsNothing);
 
     final homeState =
         tester.element(find.text('سكن النخبة الجامعي')).read<HomeCubit>().state

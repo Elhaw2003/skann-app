@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:skann_app/features/booking_requests/presentation/views/widgets/booking_room_action.dart';
 import 'package:skann_app/features/home/data/models/property_model.dart';
 import 'package:skann_app/features/home/presentation/views/widgets/amenity_icon_mapping.dart';
 import 'package:skann_app/features/home/presentation/views/widgets/property_card_labels.dart';
@@ -29,6 +30,8 @@ class RoomDetailsContent extends StatelessWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               _RoomSummary(room: room),
+              SizedBox(height: 12.h),
+              BookingRoomAction(room: room, property: property),
               if (hasPropertyText(room.description)) ...[
                 SizedBox(height: 12.h),
                 _DescriptionSection(description: room.description!),

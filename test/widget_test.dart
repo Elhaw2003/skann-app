@@ -7,14 +7,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:skann_app/core/di.dart';
 import 'package:skann_app/main.dart';
 
 void main() {
+  setUpAll(initializeDependencies);
+
   testWidgets('shows the Skann splash screen', (WidgetTester tester) async {
     await tester.pumpWidget(const MyApp());
 
     expect(find.text('سكن'), findsOneWidget);
     expect(find.text('سكنك الجامعي الأنسب والأقرب لجامعتك'), findsOneWidget);
-    expect(find.byKey(const Key('splash_logo_icon')), findsOneWidget);
+    expect(find.byIcon(Icons.home_rounded), findsOneWidget);
   });
 }

@@ -50,7 +50,7 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(_registrationApp());
-    final submitButton = find.text('إنشاء حساب طالب والبدء');
+    final submitButton = find.text('إنشاء حساب');
     await tester.ensureVisible(submitButton);
     await tester.tap(submitButton);
     await tester.pumpAndSettle();
