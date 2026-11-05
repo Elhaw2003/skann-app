@@ -25,9 +25,10 @@ class ProfileView extends StatelessWidget {
       child: Scaffold(
         backgroundColor: const Color(0xFFF4F7FB),
         bottomNavigationBar: StudentBottomNavigationBar(
-          selectedIndex: 4,
+          selectedIndex: 2,
           onDestinationSelected: (index) {
             if (index == 0) context.go(AppRoutes.studentHome);
+            if (index == 3) context.go(AppRoutes.myBookings);
           },
         ),
         body: SafeArea(

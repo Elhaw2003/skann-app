@@ -17,17 +17,20 @@ class StudentBottomNavigationBar extends StatelessWidget {
       icon: Icons.home_outlined,
       selectedIcon: Icons.home_rounded,
     ),
-    _NavigationDestination(label: 'البحث', icon: Icons.search_rounded),
-    _NavigationDestination(label: 'سكناتي', icon: Icons.apartment_rounded),
     _NavigationDestination(
       label: 'المفضلة',
       icon: Icons.favorite_border_rounded,
       selectedIcon: Icons.favorite_rounded,
     ),
     _NavigationDestination(
-      label: 'حسابي',
+      label: 'البروفايل',
       icon: Icons.account_circle_outlined,
       selectedIcon: Icons.account_circle_rounded,
+    ),
+    _NavigationDestination(
+      label: 'حجوزاتي',
+      icon: Icons.bookmark_border_rounded,
+      selectedIcon: Icons.bookmark_rounded,
     ),
   ];
 

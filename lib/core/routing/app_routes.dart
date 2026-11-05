@@ -10,4 +10,7 @@ class AppRoutes {
   static const String roommates = '/roommates';
   static const String propertyDetails = '/property/:propertyId';
   static const String roomDetails = '/room/:roomId';
+  static const String myBookings = '/my-bookings';
+  static const String createBookingRequest = '/booking-request';
+  static const String bookingRequestDetails = '/booking-request/details';
 }

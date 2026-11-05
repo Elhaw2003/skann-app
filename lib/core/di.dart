@@ -19,6 +19,8 @@ import 'package:skann_app/features/room_details/presentation/cubit/room_details_
 import 'package:skann_app/features/matching_roommates/data/repositories/matching_roommates_repository.dart';
 import 'package:skann_app/features/matching_roommates/presentation/cubit/matching_roommates_cubit.dart';
 import 'package:skann_app/features/matching_roommates/presentation/cubit/roommates_directory_cubit.dart';
+import 'package:skann_app/features/booking_requests/data/repositories/booking_requests_repo.dart';
+import 'package:skann_app/features/booking_requests/presentation/cubit/booking_requests_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -79,5 +81,11 @@ Future<void> initializeDependencies() async {
   );
   sl.registerFactory<RoommatesDirectoryCubit>(
     () => RoommatesDirectoryCubit(repository: sl()),
+  );
+  sl.registerLazySingleton<BookingRequestsRepo>(
+    () => BookingRequestsRepoImpl(apiConsumer: sl()),
+  );
+  sl.registerFactory<BookingRequestsCubit>(
+    () => BookingRequestsCubit(repository: sl()),
   );
 }
