@@ -18,6 +18,8 @@ import 'package:skann_app/features/booking_requests/presentation/views/booking_r
 import 'package:skann_app/features/booking_requests/presentation/views/booking_request_screen.dart';
 import 'package:skann_app/features/booking_requests/presentation/views/my_bookings_screen.dart';
 import 'package:skann_app/features/favorites/presentation/views/favorites_screen.dart';
+import 'package:skann_app/features/chat/presentation/views/chat_inbox_screen.dart';
+import 'package:skann_app/features/chat/presentation/views/chat_conversation_screen.dart';
 
 class RoutingGenerationConfig {
   static GoRouter routerGeneratorConfig = GoRouter(
@@ -99,6 +101,18 @@ class RoutingGenerationConfig {
         path: AppRoutes.favorites,
         name: AppRoutes.favorites,
         builder: (context, state) => const FavoritesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.chats,
+        name: AppRoutes.chats,
+        builder: (context, state) => const ChatInboxScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.conversation,
+        name: AppRoutes.conversation,
+        builder: (context, state) => ChatConversationScreen(
+          conversationId: state.pathParameters['conversationId'] ?? '',
+        ),
       ),
       GoRoute(
         path: AppRoutes.createBookingRequest,

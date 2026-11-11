@@ -5,6 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:skann_app/core/di.dart';
 import 'package:skann_app/core/errors/failure.dart';
+import 'package:skann_app/core/services/secure_storage_helper.dart';
+import 'package:skann_app/features/chat/data/repositories/chat_repository.dart';
+import 'package:skann_app/features/chat/presentation/cubit/chat_unread_cubit.dart';
 import 'package:skann_app/features/home/data/models/amenity_model.dart';
 import 'package:skann_app/features/home/data/models/location_model.dart';
 import 'package:skann_app/features/home/data/models/property_filters.dart';
@@ -37,8 +40,13 @@ void main() {
     await tester.pumpWidget(
       ScreenUtilInit(
         designSize: const Size(390, 884),
-        builder: (context, child) =>
-            const MaterialApp(home: StudentHomeScreen()),
+        builder: (context, child) => BlocProvider(
+          create: (_) => ChatUnreadCubit(
+            repository: _UnusedChatRepository(),
+            secureStorageHelper: _FakeSecureStorageHelper(),
+          ),
+          child: const MaterialApp(home: StudentHomeScreen()),
+        ),
       ),
     );
     await tester.pumpAndSettle();
@@ -155,4 +163,13 @@ class _AmenitiesRepository implements AmenitiesRepository {
       ),
     ]);
   }
+}
+
+class _UnusedChatRepository implements ChatRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+class _FakeSecureStorageHelper extends SecureStorageHelper {
+  _FakeSecureStorageHelper() : super.internal();
 }

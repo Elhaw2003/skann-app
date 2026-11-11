@@ -7,8 +7,7 @@ import 'package:skann_app/core/errors/failure.dart';
 import 'package:skann_app/core/routing/app_routes.dart';
 import 'package:skann_app/core/theme/app_colors.dart';
 import 'package:skann_app/features/auth/data/models/registration_response_model.dart';
-import 'package:skann_app/features/auth/presentation/views/widgets/registration_form_fields.dart'
-    show registrationGovernorates;
+import 'package:skann_app/features/auth/presentation/views/widgets/registration_form_fields.dart';
 import 'package:skann_app/features/profile/presentation/cubit/profile_cubit.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_edit_actions.dart';
 import 'package:skann_app/features/profile/presentation/views/widgets/profile_edit_fields.dart';

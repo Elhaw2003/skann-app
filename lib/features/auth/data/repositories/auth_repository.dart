@@ -90,12 +90,17 @@ class AuthRepositoryImpl implements AuthRepository {
           response.data.refreshToken.isEmpty) {
         throw const FormatException('Registration tokens are missing.');
       }
+      final userId = response.data.user.id;
+      if (userId == null || userId.isEmpty) {
+        throw const FormatException('The authenticated user ID is missing.');
+      }
 
       await secureStorageHelper.saveAuthenticationTokens(
         accessToken: response.data.accessToken,
         refreshToken: response.data.refreshToken,
       );
       await secureStorageHelper.saveUserType(response.data.user.role);
+      await secureStorageHelper.saveUserId(userId);
       return Right(response);
     } on PlatformException {
       return const Left(StorageFailure('Could not store authentication data.'));

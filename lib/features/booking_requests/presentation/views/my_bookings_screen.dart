@@ -36,6 +36,7 @@ class _MyBookingsView extends StatelessWidget {
             if (index == 0) context.go(AppRoutes.studentHome);
             if (index == 1) context.go(AppRoutes.favorites);
             if (index == 2) context.go(AppRoutes.profile);
+            if (index == 4) context.go(AppRoutes.chats);
           },
         ),
         body: SafeArea(

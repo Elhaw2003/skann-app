@@ -14,4 +14,6 @@ class AppRoutes {
   static const String favorites = '/favorites';
   static const String createBookingRequest = '/booking-request';
   static const String bookingRequestDetails = '/booking-request/details';
+  static const String chats = '/chats';
+  static const String conversation = '/conversations/:conversationId';
 }

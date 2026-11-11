@@ -103,6 +103,7 @@ void main() {
       expect(secureStorageHelper.accessToken, 'access-token');
       expect(secureStorageHelper.refreshToken, 'refresh-token');
       expect(secureStorageHelper.userType, 'OWNER');
+      expect(secureStorageHelper.userId, 'user-id');
       expect(
         response
             .fold((failure) => fail(failure.message), (value) => value)
@@ -137,6 +138,7 @@ void main() {
     expect(secureStorageHelper.accessToken, 'access-token');
     expect(secureStorageHelper.refreshToken, 'refresh-token');
     expect(secureStorageHelper.userType, 'STUDENT');
+    expect(secureStorageHelper.userId, 'user-id');
     expect(
       result
           .fold((failure) => fail(failure.message), (value) => value)
@@ -403,6 +405,7 @@ class _FakeSecureStorageHelper extends SecureStorageHelper {
   String? accessToken;
   String? refreshToken;
   String? userType;
+  String? userId;
 
   @override
   Future<void> saveAuthenticationTokens({
@@ -416,6 +419,11 @@ class _FakeSecureStorageHelper extends SecureStorageHelper {
   @override
   Future<void> saveUserType(String userType) async {
     this.userType = userType;
+  }
+
+  @override
+  Future<void> saveUserId(String userId) async {
+    this.userId = userId;
   }
 }
 
