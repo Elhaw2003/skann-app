@@ -10,6 +10,17 @@ class EndPoint {
   static const String myProfile = 'users/me';
   static const String myPassword = 'users/me/password';
   static const String roommates = 'users/roommates';
+  static const String conversations = 'conversations';
+  static const String conversationsUnreadTotal = 'conversations/unread-total';
+
+  static String conversationRead(String conversationId) =>
+      '$conversations/${Uri.encodeComponent(conversationId)}/read';
+
+  static String conversationMessage({
+    required String conversationId,
+    required String messageId,
+  }) =>
+      '$conversations/${Uri.encodeComponent(conversationId)}/messages/${Uri.encodeComponent(messageId)}';
 }
 
 class ApiKey {

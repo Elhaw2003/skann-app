@@ -30,6 +30,7 @@ class ProfileView extends StatelessWidget {
             if (index == 0) context.go(AppRoutes.studentHome);
             if (index == 1) context.go(AppRoutes.favorites);
             if (index == 3) context.go(AppRoutes.myBookings);
+            if (index == 4) context.go(AppRoutes.chats);
           },
         ),
         body: SafeArea(

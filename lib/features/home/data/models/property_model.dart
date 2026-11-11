@@ -385,6 +385,7 @@ class PropertyRoomPropertyModel extends Equatable {
 
 class PropertyResidentModel extends Equatable {
   const PropertyResidentModel({
+    this.id,
     this.fullName,
     this.profileImage,
     this.university,
@@ -395,6 +396,7 @@ class PropertyResidentModel extends Equatable {
     this.interests = const [],
   });
 
+  final String? id;
   final String? fullName;
   final String? profileImage;
   final String? university;
@@ -406,6 +408,7 @@ class PropertyResidentModel extends Equatable {
 
   factory PropertyResidentModel.fromJson(Map<String, dynamic> json) =>
       PropertyResidentModel(
+        id: _optionalString(json['id']),
         fullName: _optionalString(json['fullName']),
         profileImage: _optionalString(json['profileImage']),
         university: _optionalString(json['university']),
@@ -418,6 +421,7 @@ class PropertyResidentModel extends Equatable {
 
   @override
   List<Object?> get props => [
+    id,
     fullName,
     profileImage,
     university,

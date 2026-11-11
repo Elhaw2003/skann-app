@@ -23,6 +23,11 @@ import 'package:skann_app/features/booking_requests/data/repositories/booking_re
 import 'package:skann_app/features/booking_requests/presentation/cubit/booking_requests_cubit.dart';
 import 'package:skann_app/features/favorites/data/repositories/favorites_repository.dart';
 import 'package:skann_app/features/favorites/presentation/cubit/favorites_cubit.dart';
+import 'package:skann_app/features/chat/data/repositories/chat_repository.dart';
+import 'package:skann_app/features/chat/presentation/cubit/chat_conversation_cubit.dart';
+import 'package:skann_app/features/chat/presentation/cubit/chat_inbox_cubit.dart';
+import 'package:skann_app/features/chat/presentation/cubit/chat_launcher_cubit.dart';
+import 'package:skann_app/features/chat/presentation/cubit/chat_unread_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -95,5 +100,20 @@ Future<void> initializeDependencies() async {
   );
   sl.registerLazySingleton<FavoritesCubit>(
     () => FavoritesCubit(repository: sl()),
+  );
+  sl.registerLazySingleton<ChatRepository>(
+    () => ChatRepositoryImpl(apiConsumer: sl()),
+  );
+  sl.registerFactory<ChatInboxCubit>(
+    () => ChatInboxCubit(repository: sl(), secureStorageHelper: sl()),
+  );
+  sl.registerFactory<ChatConversationCubit>(
+    () => ChatConversationCubit(repository: sl(), secureStorageHelper: sl()),
+  );
+  sl.registerFactory<ChatLauncherCubit>(
+    () => ChatLauncherCubit(repository: sl()),
+  );
+  sl.registerFactory<ChatUnreadCubit>(
+    () => ChatUnreadCubit(repository: sl(), secureStorageHelper: sl()),
   );
 }

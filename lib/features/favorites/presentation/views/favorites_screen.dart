@@ -47,6 +47,7 @@ class _FavoritesViewState extends State<_FavoritesView> {
             if (index == 0) context.go(AppRoutes.studentHome);
             if (index == 2) context.go(AppRoutes.profile);
             if (index == 3) context.go(AppRoutes.myBookings);
+            if (index == 4) context.go(AppRoutes.chats);
           },
         ),
         body: SafeArea(

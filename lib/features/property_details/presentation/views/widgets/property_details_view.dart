@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:skann_app/core/routing/app_routes.dart';
 import 'package:skann_app/features/home/data/models/property_model.dart';
+import 'package:skann_app/features/chat/presentation/cubit/chat_launcher_cubit.dart';
 import 'package:skann_app/features/property_details/presentation/cubit/property_details_cubit.dart';
 import 'package:skann_app/features/property_details/presentation/cubit/property_details_state.dart';
 import 'package:skann_app/features/property_details/presentation/views/widgets/property_details_gallery.dart';
@@ -14,45 +17,84 @@ class PropertyDetailsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.rtl,
-      child: Scaffold(
-        backgroundColor: const Color(0xFFF4F7FB),
-        body: SafeArea(
-          child: BlocBuilder<PropertyDetailsCubit, PropertyDetailsState>(
-            builder: (context, state) {
-              return switch (state.status) {
-                PropertyDetailsStatus.initial ||
-                PropertyDetailsStatus.loading => const _DetailsLoadingView(),
-                PropertyDetailsStatus.failure => _DetailsFailureView(
-                  message: state.errorMessage ?? 'تعذر تحميل تفاصيل السكن.',
-                  onRetry: () {
-                    final id = state.propertyId;
-                    if (id != null) {
-                      context.read<PropertyDetailsCubit>().loadPropertyDetails(
-                        id,
-                      );
-                    }
-                  },
-                ),
-                PropertyDetailsStatus.loaded => _DetailsContent(
-                  property: state.property!,
-                  isRefreshing: state.isRefreshing,
-                  onRefresh: context.read<PropertyDetailsCubit>().refresh,
-                  rooms: state.rooms,
-                  roomsStatus: state.roomsStatus,
-                  roomsErrorMessage: state.roomsErrorMessage,
-                  onRetryRooms: () {
-                    final id = state.propertyId;
-                    if (id != null) {
-                      context.read<PropertyDetailsCubit>().loadPropertyRooms(
-                        id,
-                      );
-                    }
-                  },
-                ),
-              };
-            },
+    return BlocListener<ChatLauncherCubit, ChatLauncherState>(
+      listener: (context, state) {
+        if (state.status == ChatLauncherStatus.failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.errorMessage ?? 'تعذر بدء المحادثة.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        final conversation = state.conversation;
+        if (state.status == ChatLauncherStatus.success &&
+            conversation != null &&
+            conversation.id.isNotEmpty) {
+          context.push(
+            AppRoutes.conversation.replaceFirst(
+              ':conversationId',
+              Uri.encodeComponent(conversation.id),
+            ),
+          );
+        }
+      },
+      child: Directionality(
+        textDirection: TextDirection.rtl,
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF4F7FB),
+          body: SafeArea(
+            child: BlocBuilder<PropertyDetailsCubit, PropertyDetailsState>(
+              builder: (context, state) {
+                return switch (state.status) {
+                  PropertyDetailsStatus.initial ||
+                  PropertyDetailsStatus.loading => const _DetailsLoadingView(),
+                  PropertyDetailsStatus.failure => _DetailsFailureView(
+                    message: state.errorMessage ?? 'تعذر تحميل تفاصيل السكن.',
+                    onRetry: () {
+                      final id = state.propertyId;
+                      if (id != null) {
+                        context
+                            .read<PropertyDetailsCubit>()
+                            .loadPropertyDetails(id);
+                      }
+                    },
+                  ),
+                  PropertyDetailsStatus.loaded => Builder(
+                    builder: (context) => _DetailsContent(
+                      property: state.property!,
+                      isRefreshing: state.isRefreshing,
+                      onRefresh: context.read<PropertyDetailsCubit>().refresh,
+                      rooms: state.rooms,
+                      roomsStatus: state.roomsStatus,
+                      roomsErrorMessage: state.roomsErrorMessage,
+                      startingChatTargetUserId: context
+                          .watch<ChatLauncherCubit>()
+                          .state
+                          .targetUserId,
+                      onStartChat: (targetUserId) {
+                        final propertyId = state.propertyId;
+                        if (propertyId == null || propertyId.trim().isEmpty) {
+                          return;
+                        }
+                        context.read<ChatLauncherCubit>().startConversation(
+                          targetUserId: targetUserId,
+                          propertyId: propertyId,
+                        );
+                      },
+                      onRetryRooms: () {
+                        final id = state.propertyId;
+                        if (id != null) {
+                          context
+                              .read<PropertyDetailsCubit>()
+                              .loadPropertyRooms(id);
+                        }
+                      },
+                    ),
+                  ),
+                };
+              },
+            ),
           ),
         ),
       ),
@@ -127,6 +169,8 @@ class _DetailsContent extends StatelessWidget {
     required this.rooms,
     required this.roomsStatus,
     required this.roomsErrorMessage,
+    required this.onStartChat,
+    required this.startingChatTargetUserId,
     required this.onRetryRooms,
   });
 
@@ -136,6 +180,8 @@ class _DetailsContent extends StatelessWidget {
   final List<PropertyRoomModel> rooms;
   final PropertyRoomsStatus roomsStatus;
   final String? roomsErrorMessage;
+  final ValueChanged<String> onStartChat;
+  final String? startingChatTargetUserId;
   final VoidCallback onRetryRooms;
 
   @override
@@ -184,11 +230,17 @@ class _DetailsContent extends StatelessWidget {
                   SizedBox(height: 12.h),
                   PropertyResidentsSection(
                     residents: property.currentResidents,
+                    onStartChat: onStartChat,
+                    startingChatTargetUserId: startingChatTargetUserId,
                   ),
                 ],
                 if (_hasOwner(property.owner)) ...[
                   SizedBox(height: 12.h),
-                  PropertyOwnerSection(owner: property.owner!),
+                  PropertyOwnerSection(
+                    owner: property.owner!,
+                    onStartChat: onStartChat,
+                    startingChatTargetUserId: startingChatTargetUserId,
+                  ),
                 ],
               ]),
             ),

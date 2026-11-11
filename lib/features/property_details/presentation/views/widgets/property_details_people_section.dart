@@ -5,9 +5,16 @@ import 'package:skann_app/features/home/data/models/property_model.dart';
 import 'package:skann_app/features/property_details/presentation/views/widgets/property_details_common_widgets.dart';
 
 class PropertyResidentsSection extends StatelessWidget {
-  const PropertyResidentsSection({required this.residents, super.key});
+  const PropertyResidentsSection({
+    required this.residents,
+    required this.onStartChat,
+    required this.startingChatTargetUserId,
+    super.key,
+  });
 
   final List<PropertyResidentModel> residents;
+  final ValueChanged<String> onStartChat;
+  final String? startingChatTargetUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +28,11 @@ class PropertyResidentsSection extends StatelessWidget {
                 padding: EdgeInsets.symmetric(vertical: 12.h),
                 child: const Divider(height: 1, color: Color(0xFFEEF1F5)),
               ),
-            _ResidentRow(resident: residents[index]),
+            _ResidentRow(
+              resident: residents[index],
+              onStartChat: onStartChat,
+              startingChatTargetUserId: startingChatTargetUserId,
+            ),
           ],
         ],
       ),
@@ -30,9 +41,15 @@ class PropertyResidentsSection extends StatelessWidget {
 }
 
 class _ResidentRow extends StatelessWidget {
-  const _ResidentRow({required this.resident});
+  const _ResidentRow({
+    required this.resident,
+    required this.onStartChat,
+    required this.startingChatTargetUserId,
+  });
 
   final PropertyResidentModel resident;
+  final ValueChanged<String> onStartChat;
+  final String? startingChatTargetUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -86,15 +103,29 @@ class _ResidentRow extends StatelessWidget {
             ],
           ),
         ),
+        if (hasPropertyText(resident.id)) ...[
+          SizedBox(width: 8.w),
+          _ChatContactButton(
+            isLoading: startingChatTargetUserId == resident.id,
+            onPressed: () => onStartChat(resident.id!),
+          ),
+        ],
       ],
     );
   }
 }
 
 class PropertyOwnerSection extends StatelessWidget {
-  const PropertyOwnerSection({required this.owner, super.key});
+  const PropertyOwnerSection({
+    required this.owner,
+    required this.onStartChat,
+    required this.startingChatTargetUserId,
+    super.key,
+  });
 
   final PropertyOwnerModel owner;
+  final ValueChanged<String> onStartChat;
+  final String? startingChatTargetUserId;
 
   @override
   Widget build(BuildContext context) {
@@ -114,12 +145,52 @@ class PropertyOwnerSection extends StatelessWidget {
               ),
             ),
           ),
+          if (hasPropertyText(owner.id)) ...[
+            _ChatContactButton(
+              isLoading: startingChatTargetUserId == owner.id,
+              onPressed: () => onStartChat(owner.id!),
+            ),
+            SizedBox(width: 8.w),
+          ],
           Icon(
             Icons.verified_user_outlined,
             color: const Color(0xFF8293A6),
             size: 20.sp,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _ChatContactButton extends StatelessWidget {
+  const _ChatContactButton({required this.isLoading, required this.onPressed});
+
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 34.h,
+      child: FilledButton.tonalIcon(
+        onPressed: isLoading ? null : onPressed,
+        icon: isLoading
+            ? SizedBox(
+                width: 13.w,
+                height: 13.w,
+                child: const CircularProgressIndicator(strokeWidth: 1.8),
+              )
+            : Icon(Icons.chat_bubble_outline_rounded, size: 14.sp),
+        label: Text('مراسلة', style: TextStyle(fontSize: 10.sp)),
+        style: FilledButton.styleFrom(
+          foregroundColor: const Color(0xFF0868C9),
+          backgroundColor: const Color(0xFFEAF3FF),
+          padding: EdgeInsets.symmetric(horizontal: 8.w),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+        ),
       ),
     );
   }

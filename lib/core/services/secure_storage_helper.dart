@@ -66,6 +66,10 @@ class SecureStorageHelper {
     await storage.write(key: userTypeKey, value: userType);
   }
 
+  Future<void> saveUserId(String userId) async {
+    await storage.write(key: userIdKey, value: userId);
+  }
+
   Future<String?> getUserType() async {
     return await storage.read(key: userTypeKey);
   }

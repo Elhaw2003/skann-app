@@ -11,6 +11,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:skann_app/core/errors/failure.dart';
 import 'package:skann_app/core/network/api_consumer.dart';
 import 'package:skann_app/core/services/secure_storage_helper.dart';
+import 'package:skann_app/features/chat/data/repositories/chat_repository.dart';
+import 'package:skann_app/features/chat/presentation/cubit/chat_unread_cubit.dart';
 import 'package:skann_app/features/auth/data/models/registration_response_model.dart';
 import 'package:skann_app/features/profile/data/repositories/profile_repository.dart';
 import 'package:skann_app/features/profile/presentation/cubit/profile_cubit.dart';
@@ -439,7 +441,18 @@ void main() {
       ScreenUtilInit(
         designSize: const Size(390, 884),
         builder: (context, child) => MaterialApp(
-          home: BlocProvider.value(value: cubit, child: const ProfileView()),
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider<ProfileCubit>.value(value: cubit),
+              BlocProvider(
+                create: (_) => ChatUnreadCubit(
+                  repository: _UnusedChatRepository(),
+                  secureStorageHelper: _FakeSecureStorageHelper(),
+                ),
+              ),
+            ],
+            child: const ProfileView(),
+          ),
         ),
       ),
     );
@@ -472,7 +485,18 @@ void main() {
       ScreenUtilInit(
         designSize: const Size(390, 884),
         builder: (context, child) => MaterialApp(
-          home: BlocProvider.value(value: cubit, child: const ProfileView()),
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider<ProfileCubit>.value(value: cubit),
+              BlocProvider(
+                create: (_) => ChatUnreadCubit(
+                  repository: _UnusedChatRepository(),
+                  secureStorageHelper: _FakeSecureStorageHelper(),
+                ),
+              ),
+            ],
+            child: const ProfileView(),
+          ),
         ),
       ),
     );
@@ -512,7 +536,18 @@ void main() {
       ScreenUtilInit(
         designSize: const Size(390, 884),
         builder: (context, child) => MaterialApp(
-          home: BlocProvider.value(value: cubit, child: const ProfileView()),
+          home: MultiBlocProvider(
+            providers: [
+              BlocProvider<ProfileCubit>.value(value: cubit),
+              BlocProvider(
+                create: (_) => ChatUnreadCubit(
+                  repository: _UnusedChatRepository(),
+                  secureStorageHelper: _FakeSecureStorageHelper(),
+                ),
+              ),
+            ],
+            child: const ProfileView(),
+          ),
         ),
       ),
     );
@@ -696,4 +731,9 @@ class _FakeSecureStorageHelper extends SecureStorageHelper {
   Future<void> clearTokens() async {
     isCleared = true;
   }
+}
+
+class _UnusedChatRepository implements ChatRepository {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
